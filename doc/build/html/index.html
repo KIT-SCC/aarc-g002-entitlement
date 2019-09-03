@@ -1,0 +1,120 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>AARC-G002 Entitlements &#8212; aarc_g002_entitlement 0.0.2.dev1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="aarc-g002-entitlements">
+<h1>AARC-G002 Entitlements<a class="headerlink" href="#aarc-g002-entitlements" title="Permalink to this headline">¶</a></h1>
+<p>Release v0.0.2.dev1.</p>
+<p>This package provides a python Class to parse and compare entitlements according
+to the AARC-G002 Recommendation <a class="reference external" href="https://aarc-project.eu/guidelines/aarc-g002">https://aarc-project.eu/guidelines/aarc-g002</a></p>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">required_group= &#39;urn:geant:h-df.de:group:aai-admin#unity.helmholtz-data-federation.de&#39;</span>
+<span class="go">actual_group  = &#39;urn:geant:h-df.de:group:aai-admin:role=member#backupserver.used.for.developmt.de&#39;</span>
+
+<span class="go">required_entitlement = Aarc_g002_entitlement(required_group)</span>
+<span class="go">actual_entitlement   = Aarc_g002_entitlement(actual_group)</span>
+
+<span class="go">print(&#39;\n3: Role assigned but not required&#39;)</span>
+<span class="go">print(&#39;    is_contained_in:   =&gt; {}&#39;.format(required_entitlement.is_contained_in(actual_entitlement)))</span>
+<span class="go">print(&#39;        (are equal:    =&gt; {})&#39;.format(required_entitlement == actual_entitlement))</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="#">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Parser for entitlements according to the AARC-G002 Recommendation</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=indigo-dc&repo=aarc_g002_entitlement&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script><hr/>
+<p style="font-size: 10px;">
+This software is part of the <a href="https://aarc-project.eu">AARC</a> project, that has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 653965 and 730941
+</p>
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017-present, .
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
