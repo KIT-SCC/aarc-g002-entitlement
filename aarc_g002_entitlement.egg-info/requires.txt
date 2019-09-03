@@ -1,4 +1,0 @@
-flask
-regex
-requests
-requests_cache
