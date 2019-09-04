@@ -12,6 +12,16 @@ import sys
 
 logger = logging.getLogger(__name__)
 
+class Failure(Exception):
+    """Indicates a failure in attempting to deploy/undeploy the user.
+
+    The previous state should be retained, but might also be inconsistent
+    """
+    def __init__(self, message, **kwargs):
+        # super().__init__(state='failed', **kwargs)
+        logging.error(message)
+        super().__init__(**kwargs)
+
 class Aarc_g002_entitlement :
     """EduPerson Entitlement attribute (de-)serialisation.
 
@@ -25,10 +35,10 @@ class Aarc_g002_entitlement :
            r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' +     # Namespace-ID and delegated URN namespace
            r'(:(?P<subnamespace>[^:]+))*?' +                      # Sub-namespaces
         r':group:' +
-           r'(?P<group>[^:]+)' +                                  # Root group
-           r'(:(?P<subgroup>[^:]+))*?' +                          # Sub-groups
-           r'(:role=(?P<role>.+))?' +                             # Role of the user in the deepest group
-        r'#(?P<group_authority>.+)'                               # Authoritative soruce of the entitlement (URN)
+           r'(?P<group>[^:#]+)' +                                 # Root group
+           r'(:(?P<subgroup>[^:#]+))*?' +                         # Sub-groups
+           r'(:role=(?P<role>[^#]+))*?' +                         # Role of the user in the deepest group
+        r'(#(?P<group_authority>.+))?'                            # Authoritative soruce of the entitlement (URN)
     )
 
     def __init__(self, raw):
@@ -41,7 +51,7 @@ class Aarc_g002_entitlement :
             match = self.re.fullmatch(raw)
 
         if not match:
-            raise Failure(message="Failed to parse entitlements attribute")
+            raise Failure(message="Failed to parse entitlements attribute [1/2]")
 
         logger.debug("Parsing entitlement attribute: {}".format(match.capturesdict()))
         try:
@@ -53,9 +63,9 @@ class Aarc_g002_entitlement :
             self.subgroups = match.captures('subgroup')
             [self.role] = match.captures('role') or [None]
 
-            [self.group_authority] = match.captures('group_authority')
+            [self.group_authority] = match.captures('group_authority') or [None]
         except ValueError:
-            raise Failure(message="Failed to parse entitlements attribute")
+            raise Failure(message="Failed to parse entitlements attribute [2/2]")
 
     def __repr__(self):
         """Serialize the entitlement to the AARC-G002 format.
