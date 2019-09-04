@@ -17,7 +17,6 @@ class Aarc_g002(unittest.TestCase):
         req_entitlement        = Aarc_g002_entitlement(required_group)
         act_entitlement        = Aarc_g002_entitlement(actual_group)
         self.assertEqual(req_entitlement.is_contained_in(act_entitlement), True)
-        # self.assertEqual(aarc_g002_matcher.aarc_g002_matcher(required_group, actual_group), True)
 
     def test_role_not_required(self):
         required_group= 'urn:geant:h-df.de:group:aai-admin#unity.helmholtz-data-federation.de'
@@ -25,7 +24,6 @@ class Aarc_g002(unittest.TestCase):
         req_entitlement        = Aarc_g002_entitlement(required_group)
         act_entitlement        = Aarc_g002_entitlement(actual_group)
         self.assertEqual(req_entitlement.is_contained_in(act_entitlement), True)
-        # self.assertEqual(aarc_g002_matcher.aarc_g002_matcher(required_group, actual_group), True)
 
     def test_role_required(self):
         required_group= 'urn:geant:h-df.de:group:aai-admin:role=member#unity.helmholtz-data-federation.de'
@@ -33,7 +31,6 @@ class Aarc_g002(unittest.TestCase):
         req_entitlement        = Aarc_g002_entitlement(required_group)
         act_entitlement        = Aarc_g002_entitlement(actual_group)
         self.assertEqual(req_entitlement.is_contained_in(act_entitlement), False)
-        # self.assertEqual(aarc_g002_matcher.aarc_g002_matcher(required_group, actual_group), False)
 
     def test_subgroup_required(self):
         required_group= 'urn:geant:h-df.de:group:aai-admin:special-admins#unity.helmholtz-data-federation.de'
@@ -41,7 +38,6 @@ class Aarc_g002(unittest.TestCase):
         req_entitlement        = Aarc_g002_entitlement(required_group)
         act_entitlement        = Aarc_g002_entitlement(actual_group)
         self.assertEqual(req_entitlement.is_contained_in(act_entitlement), False)
-        # self.assertEqual(aarc_g002_matcher.aarc_g002_matcher(required_group, actual_group), False)
 
     def test_user_in_subgroup(self):
         required_group= 'urn:geant:h-df.de:group:aai-admin#unity.helmholtz-data-federation.de'
@@ -49,7 +45,6 @@ class Aarc_g002(unittest.TestCase):
         req_entitlement        = Aarc_g002_entitlement(required_group)
         act_entitlement        = Aarc_g002_entitlement(actual_group)
         self.assertEqual(req_entitlement.is_contained_in(act_entitlement), True)
-        # self.assertEqual(aarc_g002_matcher.aarc_g002_matcher(required_group, actual_group), True)
 
     def test_role_required_for_supergroup(self):
         required_group= 'urn:geant:h-df.de:group:aai-admin:role=admin#unity.helmholtz-data-federation.de'
@@ -57,13 +52,18 @@ class Aarc_g002(unittest.TestCase):
         req_entitlement        = Aarc_g002_entitlement(required_group)
         act_entitlement        = Aarc_g002_entitlement(actual_group)
         self.assertEqual(req_entitlement.is_contained_in(act_entitlement), False)
-        # self.assertEqual(aarc_g002_matcher.aarc_g002_matcher(required_group, actual_group), False)
-    # def test_(self):
-    #     required_group = ''
-    #     actual_group   = ''
+
+    def test_failure_incomplete_but_valid_entitlement_1(self):
+        required_group= 'urn:geant:h-df.de:group:aai-admin:role=admin'
+        req_entitlement        = Aarc_g002_entitlement(required_group)
+
+    def test_failure_incomplete_but_valid_entitlement_2(self):
+        required_group= 'urn:geant:h-df.de:group:aai-admin'
+        req_entitlement        = Aarc_g002_entitlement(required_group)
+
+    # def test_failure_incomplete_invalid_entitlement(self):
+    #     required_group= 'urn:geant:h-df.de'
     #     req_entitlement        = Aarc_g002_entitlement(required_group)
-    #     act_entitlement        = Aarc_g002_entitlement(actual_group)
-    #     self.assertEqual(act_entitlement.is_contained_in(act_entitlement), True)
 
 if __name__ == '__main__':
     unittest.main()
