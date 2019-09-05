@@ -1,6 +1,14 @@
 CHANGES
 =======
 
+v0.0.5
+------
+
+* remove unneeded files
+* removed
+* Add Failure class; extend regex to make group\_authority optional
+* add additional tests
+
 v0.0.4
 ------
 
