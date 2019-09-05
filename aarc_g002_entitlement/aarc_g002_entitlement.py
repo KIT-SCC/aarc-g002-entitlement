@@ -30,7 +30,18 @@ class Aarc_g002_entitlement :
 
     # This regex is not compatible with stdlib 're', we need 'regex'!
     # (because of repeated captures, see https://bugs.python.org/issue7132)
-    re = regex.compile(
+    re_strict = regex.compile(
+        r'urn:' +
+           r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' +     # Namespace-ID and delegated URN namespace
+           r'(:(?P<subnamespace>[^:]+))*?' +                      # Sub-namespaces
+        r':group:' +
+           r'(?P<group>[^:]+)' +                                  # Root group
+           r'(:(?P<subgroup>[^:]+))*?' +                          # Sub-groups
+           r'(:role=(?P<role>.+))?' +                             # Role of the user in the deepest group
+        r'#(?P<group_authority>.+)'                               # Authoritative soruce of the entitlement (URN)
+    )
+
+    re_lax = regex.compile(
         r'urn:' +
            r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' +     # Namespace-ID and delegated URN namespace
            r'(:(?P<subnamespace>[^:]+))*?' +                      # Sub-namespaces
@@ -41,8 +52,11 @@ class Aarc_g002_entitlement :
         r'(#(?P<group_authority>.+))?'                            # Authoritative soruce of the entitlement (URN)
     )
 
-    def __init__(self, raw):
+    def __init__(self, raw, strict=True):
         """Parse a raw EduPerson entitlement string in the AARC-G002 format."""
+        self.re = self.re_lax
+        if strict:
+            self.re = self.re_strict
         if isinstance (raw, list):
             logging.debug("raw is list")
             for entry in raw:
