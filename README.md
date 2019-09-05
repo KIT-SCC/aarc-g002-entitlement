@@ -26,6 +26,16 @@ print('        (are equal:    => {})'.format(required_entitlement == actual_enti
 # Insatallation
 ```
 pip --user install aarc-g002-entitlement
+```
+
+# Note
+
+This code makes on intentional exception from implementing the standard:
+AARC-G002 makes the issuing authority mandatory (non-empty-string).
+However, admins that specify the required entitlement don't care about
+specifying this. Also the authority must be ignored when comparing two
+entitlements. Therefore, the code is a bit laxer, in that it does also
+accept entitlements that don't specify an authority.
 
 # Funding Notice 
 The AARC project has received funding from the European Union’s Horizon
