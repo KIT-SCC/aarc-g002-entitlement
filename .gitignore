@@ -9,6 +9,7 @@ iam-deep-public.json
 oidc-test-2.py
 oidc-test-3.py
 oidc-test.py
+Changelog
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
