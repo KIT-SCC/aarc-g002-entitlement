@@ -65,7 +65,10 @@ class Aarc_g002_entitlement :
             match = self.re.fullmatch(raw)
 
         if not match:
-            raise Failure(message="Failed to parse entitlements attribute [1/2]")
+            logger.warning ("Could not parse {}".format(raw))
+            if strict:
+                raise Failure(message="Failed to parse entitlements attribute [1/2]")
+            return
 
         logger.debug("Parsing entitlement attribute: {}".format(match.capturesdict()))
         try:
@@ -162,6 +165,11 @@ class Aarc_g002_entitlement :
     def __le__(self,other):
         """ Check if self is contained in other.
         Please use "is_contained_in", see below"""
+        if not hasattr(self, 'namespace_id'):
+            return False
+        if not hasattr(other, 'namespace_id'):
+            return False
+
         if self.namespace_id != other.namespace_id:
             return False
 
