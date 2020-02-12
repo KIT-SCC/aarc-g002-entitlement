@@ -75,6 +75,13 @@ class Aarc_g002(unittest.TestCase):
         act_entitlement        = Aarc_g002_entitlement(actual_group, strict=False)
         self.assertEqual(req_entitlement.is_contained_in(act_entitlement), False)
 
+    def test_non_aarc_entitlement_1(self):
+        required_group= 'urn:geant:h-df.de:group:aai-admin'
+        actual_group  = 'urn:mace:dir:entitlement:common-lib-terms'
+        req_entitlement        = Aarc_g002_entitlement(required_group, strict=False)
+        act_entitlement        = Aarc_g002_entitlement(actual_group, strict=False)
+        self.assertEqual(req_entitlement.is_contained_in(act_entitlement), False)
+
         # "urn:geant:kit.edu:group:DFN-SLCS",
         # "urn:geant:kit.edu:group:LSDF-DIS",
         # "urn:geant:kit.edu:group:bwGrid",
