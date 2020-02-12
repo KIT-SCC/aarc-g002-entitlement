@@ -53,6 +53,42 @@ class Aarc_g002(unittest.TestCase):
         act_entitlement        = Aarc_g002_entitlement(actual_group)
         self.assertEqual(req_entitlement.is_contained_in(act_entitlement), False)
 
+    def test_foreign_entitlement_1(self):
+        required_group= 'urn:geant:h-df.de:group:aai-admin'
+        actual_group  = 'urn:geant:kit.edu:group:bwUniCluster'
+        req_entitlement        = Aarc_g002_entitlement(required_group, strict=False)
+        act_entitlement        = Aarc_g002_entitlement(actual_group, strict=False)
+        self.assertEqual(req_entitlement.is_contained_in(act_entitlement), False)
+
+    def test_foreign_entitlement_2(self):
+        required_group= 'urn:geant:h-df.de:group:myExampleColab#unity.helmholtz-data-federation.de'
+        actual_group  = 'urn:geant:kit.edu:group:bwUniCluster'
+        req_entitlement        = Aarc_g002_entitlement(required_group)
+        act_entitlement        = Aarc_g002_entitlement(actual_group, strict=False)
+        print ("equality in ..._2: {}".format(req_entitlement.is_contained_in(act_entitlement)))
+        self.assertEqual(req_entitlement.is_contained_in(act_entitlement), False)
+
+    def test_foreign_entitlement_1(self):
+        required_group= 'urn:geant:h-df.de:group:aai-admin'
+        actual_group  = 'urn:geant:kit.edu:group:aai-admin'
+        req_entitlement        = Aarc_g002_entitlement(required_group, strict=False)
+        act_entitlement        = Aarc_g002_entitlement(actual_group, strict=False)
+        self.assertEqual(req_entitlement.is_contained_in(act_entitlement), False)
+
+        # "urn:geant:kit.edu:group:DFN-SLCS",
+        # "urn:geant:kit.edu:group:LSDF-DIS",
+        # "urn:geant:kit.edu:group:bwGrid",
+        # "urn:geant:kit.edu:group:bwLSDF-FS",
+        # "urn:geant:kit.edu:group:bwUniCluster",
+        # "urn:geant:kit.edu:group:bwsyncnshare",
+        # "urn:geant:kit.edu:group:bwsyncnshare-idm",
+        # "urn:geant:kit.edu:group:gruppenverwalter"
+        #
+
+
+
+
+
     def test_failure_incomplete_but_valid_entitlement_1(self):
         required_group= 'urn:geant:h-df.de:group:aai-admin:role=admin'
         req_entitlement        = Aarc_g002_entitlement(required_group, strict=False)
