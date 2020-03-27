@@ -53,30 +53,27 @@ class Aarc_g002_entitlement :
 
     def __init__(self, raw, strict=True):
         """Parse a raw EduPerson entitlement string in the AARC-G002 format."""
-        re = ENTITLEMENT_REGEX['strict' if strict else 'lax']
 
-        if isinstance (raw, list):
-            logging.debug("raw is list")
-            for entry in raw:
-                match = re.fullmatch(entry)
-        else:
-            match = re.fullmatch(raw)
+        match = ENTITLEMENT_REGEX['strict' if strict else 'lax'].fullmatch(raw)
 
-        if not match:
-            logger.warning("Could not parse %s", raw)
+        if match is None:
+            logger.warning("Input did not match (strict=%s): %s", strict, raw)
+
             if strict:
-                raise Failure("Failed to parse entitlements attribute [1/2]")
-            return
+                raise Failure("Input did not match the strict entitlement regex")
+            raise Failure("Input did not match the entitlement regex")
 
-        logger.debug("Parsing entitlement attribute: %s", match.capturesdict())
+
+        capturesdict = match.capturesdict()
+        logger.debug("Extracting entitlement attributes: %s", capturesdict)
         try:
-            [self.namespace_id] = match.captures('nid')
-            [self.delegated_namespace] = match.captures('delegated_namespace')
-            self.subnamespaces = match.captures('subnamespace')
+            [self.namespace_id] = capturesdict.get('nid')
+            [self.delegated_namespace] = capturesdict.get('delegated_namespace')
+            self.subnamespaces = capturesdict.get('subnamespace')
 
-            [self.group] = match.captures('group')
-            self.subgroups = match.captures('subgroup')
-            [self.role] = match.captures('role') or [None]
+            [self.group] = capturesdict.get('group')
+            self.subgroups = capturesdict.get('subgroup')
+            [self.role] = capturesdict.get('role') or [None]
 
             [self.group_authority] = match.captures('group_authority') or [None]
         except ValueError as e:
