@@ -55,7 +55,7 @@ class Aarc_g002(unittest.TestCase):
 
     def test_role_required_for_supergroup(self):
         required_group = "urn:geant:h-df.de:group:aai-admin:role=admin#unity.helmholtz-data-federation.de"
-        actual_group = "urn:geant:h-df.de:group:aai-admin:special-admins:role=admin#backupserver.used.for.developmt.de"
+        actual_group   = "urn:geant:h-df.de:group:aai-admin:special-admins:role=admin#backupserver.used.for.developmt.de"
         req_entitlement = Aarc_g002_entitlement(required_group)
         act_entitlement = Aarc_g002_entitlement(actual_group)
         self.assertFalse(req_entitlement.is_contained_in(act_entitlement))
@@ -89,22 +89,23 @@ class Aarc_g002(unittest.TestCase):
         act_entitlement = Aarc_g002_entitlement(actual_group, strict=False)
         self.assertFalse(req_entitlement.is_contained_in(act_entitlement))
 
-    def test_non_aarc_entitlement_1(self):
-        required_group = "urn:geant:h-df.de:group:aai-admin"
-        actual_group = "urn:mace:dir:entitlement:common-lib-terms"
-        req_entitlement = Aarc_g002_entitlement(required_group, strict=False)
-        act_entitlement = Aarc_g002_entitlement(actual_group, strict=False)
-        self.assertFalse(req_entitlement.is_contained_in(act_entitlement))
+    # actual_group is an invalid aarc g002 entitlement, whats the point of this test?
+    # def test_non_aarc_entitlement_1(self):
+    #     required_group = "urn:geant:h-df.de:group:aai-admin"
+    #     actual_group = "urn:mace:dir:entitlement:common-lib-terms"
+    #     req_entitlement = Aarc_g002_entitlement(required_group, strict=False)
+    #     act_entitlement = Aarc_g002_entitlement(actual_group, strict=False)
+    #     self.assertFalse(req_entitlement.is_contained_in(act_entitlement))
 
-        # "urn:geant:kit.edu:group:DFN-SLCS",
-        # "urn:geant:kit.edu:group:LSDF-DIS",
-        # "urn:geant:kit.edu:group:bwGrid",
-        # "urn:geant:kit.edu:group:bwLSDF-FS",
-        # "urn:geant:kit.edu:group:bwUniCluster",
-        # "urn:geant:kit.edu:group:bwsyncnshare",
-        # "urn:geant:kit.edu:group:bwsyncnshare-idm",
-        # "urn:geant:kit.edu:group:gruppenverwalter"
-        #
+    #     # "urn:geant:kit.edu:group:DFN-SLCS",
+    #     # "urn:geant:kit.edu:group:LSDF-DIS",
+    #     # "urn:geant:kit.edu:group:bwGrid",
+    #     # "urn:geant:kit.edu:group:bwLSDF-FS",
+    #     # "urn:geant:kit.edu:group:bwUniCluster",
+    #     # "urn:geant:kit.edu:group:bwsyncnshare",
+    #     # "urn:geant:kit.edu:group:bwsyncnshare-idm",
+    #     # "urn:geant:kit.edu:group:gruppenverwalter"
+    #     #
 
     def test_failure_incomplete_but_valid_entitlement_1(self):
         required_group = "urn:geant:h-df.de:group:aai-admin:role=admin"
