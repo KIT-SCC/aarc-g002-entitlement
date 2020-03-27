@@ -1,26 +1,49 @@
 '''Check entitlements according to the AARC G002 recommendation
    https://aarc-project.eu/guidelines/aarc-g002'''
 # This code is distributed under the MIT License
-# pylint 
+# pylint
 # vim: tw=100 foldmethod=indent
 # pylint: disable=bad-continuation, invalid-name, superfluous-parens
 # pylint: disable=bad-whitespace
 
-import regex
 import logging
-import sys
+import regex
 
 logger = logging.getLogger(__name__)
 
-class Failure(Exception):
-    """Indicates a failure in attempting to deploy/undeploy the user.
+# These regexes are not compatible with stdlib 're', we need 'regex'!
+# (because of repeated captures, see https://bugs.python.org/issue7132)
+ENTITLEMENT_REGEX = {
+    'strict':  regex.compile(
+        r'urn:' +
+        r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' +     # Namespace-ID and delegated URN namespace
+        r'(:(?P<subnamespace>[^:]+))*?' +                      # Sub-namespaces
+        r':group:' +
+        r'(?P<group>[^:]+)' +                                  # Root group
+        r'(:(?P<subgroup>[^:]+))*?' +                          # Sub-groups
+        r'(:role=(?P<role>.+))?' +                             # Role of the user in the deepest group
+        r'#(?P<group_authority>.+)'                               # Authoritative soruce of the entitlement (URN)
+    ),
+    'lax': regex.compile(
+        r'urn:' +
+        r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' +     # Namespace-ID and delegated URN namespace
+        r'(:(?P<subnamespace>[^:]+))*?' +                      # Sub-namespaces
+        r':group:' +
+        r'(?P<group>[^:#]+)' +                                 # Root group
+        r'(:(?P<subgroup>[^:#]+))*?' +                         # Sub-groups
+        r'(:role=(?P<role>[^#]+))*?' +                         # Role of the user in the deepest group
+        r'(#(?P<group_authority>.+))?'                            # Authoritative soruce of the entitlement (URN)
+    )
+}
 
-    The previous state should be retained, but might also be inconsistent
+class Failure(ValueError):
+    """Indicates a failure to parse an Aarc_g002_entitlement
     """
     def __init__(self, message, **kwargs):
-        # super().__init__(state='failed', **kwargs)
+        # logging here logs in the calling scope of Aarc_g002_entitlement
+        # Aarc_g002_entitlement should log before raising an exception
         logging.error(message)
-        super().__init__(**kwargs)
+        super().__init__(message, **kwargs)
 
 class Aarc_g002_entitlement :
     """EduPerson Entitlement attribute (de-)serialisation.
@@ -28,49 +51,24 @@ class Aarc_g002_entitlement :
     As specified in: https://aarc-project.eu/guidelines/aarc-g002/
     """
 
-    # This regex is not compatible with stdlib 're', we need 'regex'!
-    # (because of repeated captures, see https://bugs.python.org/issue7132)
-    re_strict = regex.compile(
-        r'urn:' +
-           r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' +     # Namespace-ID and delegated URN namespace
-           r'(:(?P<subnamespace>[^:]+))*?' +                      # Sub-namespaces
-        r':group:' +
-           r'(?P<group>[^:]+)' +                                  # Root group
-           r'(:(?P<subgroup>[^:]+))*?' +                          # Sub-groups
-           r'(:role=(?P<role>.+))?' +                             # Role of the user in the deepest group
-        r'#(?P<group_authority>.+)'                               # Authoritative soruce of the entitlement (URN)
-    )
-
-    re_lax = regex.compile(
-        r'urn:' +
-           r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' +     # Namespace-ID and delegated URN namespace
-           r'(:(?P<subnamespace>[^:]+))*?' +                      # Sub-namespaces
-        r':group:' +
-           r'(?P<group>[^:#]+)' +                                 # Root group
-           r'(:(?P<subgroup>[^:#]+))*?' +                         # Sub-groups
-           r'(:role=(?P<role>[^#]+))*?' +                         # Role of the user in the deepest group
-        r'(#(?P<group_authority>.+))?'                            # Authoritative soruce of the entitlement (URN)
-    )
-
     def __init__(self, raw, strict=True):
         """Parse a raw EduPerson entitlement string in the AARC-G002 format."""
-        self.re = self.re_lax
-        if strict:
-            self.re = self.re_strict
+        re = ENTITLEMENT_REGEX['strict' if strict else 'lax']
+
         if isinstance (raw, list):
             logging.debug("raw is list")
             for entry in raw:
-                match = self.re.fullmatch(entry)
+                match = re.fullmatch(entry)
         else:
-            match = self.re.fullmatch(raw)
+            match = re.fullmatch(raw)
 
         if not match:
-            logger.warning ("Could not parse {}".format(raw))
+            logger.warning("Could not parse %s", raw)
             if strict:
-                raise Failure(message="Failed to parse entitlements attribute [1/2]")
+                raise Failure("Failed to parse entitlements attribute [1/2]")
             return
 
-        logger.debug("Parsing entitlement attribute: {}".format(match.capturesdict()))
+        logger.debug("Parsing entitlement attribute: %s", match.capturesdict())
         try:
             [self.namespace_id] = match.captures('nid')
             [self.delegated_namespace] = match.captures('delegated_namespace')
@@ -81,8 +79,8 @@ class Aarc_g002_entitlement :
             [self.role] = match.captures('role') or [None]
 
             [self.group_authority] = match.captures('group_authority') or [None]
-        except ValueError:
-            raise Failure(message="Failed to parse entitlements attribute [2/2]")
+        except ValueError as e:
+            raise Failure("Failed to parse entitlements attribute [2/2]") from e
 
     def __repr__(self):
         """Serialize the entitlement to the AARC-G002 format.
@@ -103,6 +101,7 @@ class Aarc_g002_entitlement :
                 'subgroups': ''.join([':{}'.format(grp) for grp in self.subgroups]),
                 'role': ':role={}'.format(self.role) if self.role else ''
         }))
+
     def __str__(self):
         """Return the entitlement in human-readable string form."""
         return ((
@@ -293,4 +292,4 @@ if __name__ == '__main__':
 
 
 
-    #TODO: Add more Weird combinations of these with roles
+# TODO: Add more Weird combinations of these with roles
