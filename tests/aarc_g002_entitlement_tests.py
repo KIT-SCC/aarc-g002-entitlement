@@ -1,6 +1,6 @@
 # pylint: disable=bad-whitespace, invalid-name, missing-docstring
 import unittest
-from aarc_g002_entitlement import Aarc_g002_entitlement, Failure
+from aarc_g002_entitlement import Aarc_g002_entitlement
 
 
 class Aarc_g002(unittest.TestCase):
@@ -117,7 +117,7 @@ class Aarc_g002(unittest.TestCase):
 
     def test_failure_incomplete_invalid_entitlement(self):
         required_group = "urn:geant:h-df.de"
-        with self.assertRaises(Failure):
+        with self.assertRaises(ValueError):
             Aarc_g002_entitlement(required_group)
 
 

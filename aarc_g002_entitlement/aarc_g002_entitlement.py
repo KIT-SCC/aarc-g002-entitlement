@@ -36,15 +36,6 @@ ENTITLEMENT_REGEX = {
     )
 }
 
-class Failure(ValueError):
-    """Indicates a failure to parse an Aarc_g002_entitlement
-    """
-    def __init__(self, message, **kwargs):
-        # logging here logs in the calling scope of Aarc_g002_entitlement
-        # Aarc_g002_entitlement should log before raising an exception
-        logging.error(message)
-        super().__init__(message, **kwargs)
-
 class Aarc_g002_entitlement :
     """EduPerson Entitlement attribute (de-)serialisation.
 
@@ -59,9 +50,11 @@ class Aarc_g002_entitlement :
         if match is None:
             logger.warning("Input did not match (strict=%s): %s", strict, raw)
 
+            msg = 'Input does not seem to be an AARC-G002 Entitlement'
+
             if strict:
-                raise Failure("Input did not match the strict entitlement regex")
-            raise Failure("Input did not match the entitlement regex")
+                raise ValueError(msg)
+            raise ValueError(msg + ' (Omitting the group authority was permitted)')
 
 
         capturesdict = match.capturesdict()
@@ -77,7 +70,8 @@ class Aarc_g002_entitlement :
 
             [self.group_authority] = match.captures('group_authority') or [None]
         except ValueError as e:
-            raise Failure("Failed to parse entitlements attribute [2/2]") from e
+            logger.error('On assigning the captured attributes: %s', e)
+            raise Exception('Error extracting captured attributes') from e
 
     def __repr__(self):
         """Serialize the entitlement to the AARC-G002 format.
