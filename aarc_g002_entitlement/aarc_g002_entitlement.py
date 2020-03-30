@@ -48,7 +48,7 @@ class Aarc_g002_entitlement :
         match = ENTITLEMENT_REGEX['strict' if strict else 'lax'].fullmatch(raw)
 
         if match is None:
-            logger.warning("Input did not match (strict=%s): %s", strict, raw)
+            logger.info('Input did not match (strict=%s): %s', strict, raw)
 
             msg = 'Input does not seem to be an AARC-G002 Entitlement'
 
@@ -152,14 +152,9 @@ class Aarc_g002_entitlement :
 
         return True
 
-    def __le__(self,other):
+    def __le__(self, other):
         """ Check if self is contained in other.
         Please use "is_contained_in", see below"""
-        if not hasattr(self, 'namespace_id'):
-            return False
-        if not hasattr(other, 'namespace_id'):
-            return False
-
         if self.namespace_id != other.namespace_id:
             return False
 
@@ -178,6 +173,9 @@ class Aarc_g002_entitlement :
                 return False
 
         if self.role is not None:
+            if self.role != other.role:
+                return False
+
             try:
                 myown_subgroup_for_role = self.subgroups[-1]
             except IndexError:
@@ -188,8 +186,6 @@ class Aarc_g002_entitlement :
                 other_subgroup_for_role = None
 
             if myown_subgroup_for_role != other_subgroup_for_role:
-                return False
-            if self.role != other.role:
                 return False
 
         return True
