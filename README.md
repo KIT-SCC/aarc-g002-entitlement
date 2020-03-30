@@ -22,6 +22,9 @@ print('    is_contained_in:   => {}'.format(required_entitlement.is_contained_in
 print('        (are equal:    => {})'.format(required_entitlement == actual_entitlement))
 ```
 
+
+For more examples: `./example.py`
+
 # Installation
 ```
 pip --user install aarc-g002-entitlement
