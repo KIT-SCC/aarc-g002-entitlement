@@ -31,8 +31,8 @@ ENTITLEMENT_REGEX = {
         r':group:' +
         r'(?P<group>[^:#]+)' +                                 # Root group
         r'(:(?P<subgroup>[^:#]+))*?' +                         # Sub-groups
-        r'(:role=(?P<role>[^#]+))*?' +                         # Role of the user in the deepest group
-        r'(#(?P<group_authority>.+))?'                            # Authoritative soruce of the entitlement (URN)
+        r'(:role=(?P<role>[^#]+))?' +                         # Role of the user in the deepest group
+        r'(#(?P<group_authority>.+))?'                            # Authoritative source of the entitlement (URN)
     )
 }
 
