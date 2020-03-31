@@ -71,7 +71,7 @@ class Aarc_g002_entitlement :
             [self.group_authority] = match.captures('group_authority') or [None]
         except ValueError as e:
             logger.error('On assigning the captured attributes: %s', e)
-            raise Exception('Error extracting captured attributes') from e
+            raise Exception('Error extracting captured attributes: %s', e)
 
     def __repr__(self):
         """Serialize the entitlement to the AARC-G002 format.
