@@ -1,26 +1,40 @@
 '''Check entitlements according to the AARC G002 recommendation
    https://aarc-project.eu/guidelines/aarc-g002'''
 # This code is distributed under the MIT License
-# pylint 
+# pylint
 # vim: tw=100 foldmethod=indent
 # pylint: disable=bad-continuation, invalid-name, superfluous-parens
 # pylint: disable=bad-whitespace
 
-import regex
 import logging
-import sys
+import regex
 
 logger = logging.getLogger(__name__)
 
-class Failure(Exception):
-    """Indicates a failure in attempting to deploy/undeploy the user.
-
-    The previous state should be retained, but might also be inconsistent
-    """
-    def __init__(self, message, **kwargs):
-        # super().__init__(state='failed', **kwargs)
-        logging.error(message)
-        super().__init__(**kwargs)
+# These regexes are not compatible with stdlib 're', we need 'regex'!
+# (because of repeated captures, see https://bugs.python.org/issue7132)
+ENTITLEMENT_REGEX = {
+    'strict':  regex.compile(
+        r'urn:' +
+        r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' +     # Namespace-ID and delegated URN namespace
+        r'(:(?P<subnamespace>[^:]+))*?' +                      # Sub-namespaces
+        r':group:' +
+        r'(?P<group>[^:]+)' +                                  # Root group
+        r'(:(?P<subgroup>[^:]+))*?' +                          # Sub-groups
+        r'(:role=(?P<role>.+))?' +                             # Role of the user in the deepest group
+        r'#(?P<group_authority>.+)'                               # Authoritative soruce of the entitlement (URN)
+    ),
+    'lax': regex.compile(
+        r'urn:' +
+        r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' +     # Namespace-ID and delegated URN namespace
+        r'(:(?P<subnamespace>[^:]+))*?' +                      # Sub-namespaces
+        r':group:' +
+        r'(?P<group>[^:#]+)' +                                 # Root group
+        r'(:(?P<subgroup>[^:#]+))*?' +                         # Sub-groups
+        r'(:role=(?P<role>[^#]+))?' +                         # Role of the user in the deepest group
+        r'(#(?P<group_authority>.+))?'                            # Authoritative source of the entitlement (URN)
+    )
+}
 
 class Aarc_g002_entitlement :
     """EduPerson Entitlement attribute (de-)serialisation.
@@ -28,61 +42,36 @@ class Aarc_g002_entitlement :
     As specified in: https://aarc-project.eu/guidelines/aarc-g002/
     """
 
-    # This regex is not compatible with stdlib 're', we need 'regex'!
-    # (because of repeated captures, see https://bugs.python.org/issue7132)
-    re_strict = regex.compile(
-        r'urn:' +
-           r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' +     # Namespace-ID and delegated URN namespace
-           r'(:(?P<subnamespace>[^:]+))*?' +                      # Sub-namespaces
-        r':group:' +
-           r'(?P<group>[^:]+)' +                                  # Root group
-           r'(:(?P<subgroup>[^:]+))*?' +                          # Sub-groups
-           r'(:role=(?P<role>.+))?' +                             # Role of the user in the deepest group
-        r'#(?P<group_authority>.+)'                               # Authoritative soruce of the entitlement (URN)
-    )
-
-    re_lax = regex.compile(
-        r'urn:' +
-           r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' +     # Namespace-ID and delegated URN namespace
-           r'(:(?P<subnamespace>[^:]+))*?' +                      # Sub-namespaces
-        r':group:' +
-           r'(?P<group>[^:#]+)' +                                 # Root group
-           r'(:(?P<subgroup>[^:#]+))*?' +                         # Sub-groups
-           r'(:role=(?P<role>[^#]+))*?' +                         # Role of the user in the deepest group
-        r'(#(?P<group_authority>.+))?'                            # Authoritative soruce of the entitlement (URN)
-    )
-
     def __init__(self, raw, strict=True):
         """Parse a raw EduPerson entitlement string in the AARC-G002 format."""
-        self.re = self.re_lax
-        if strict:
-            self.re = self.re_strict
-        if isinstance (raw, list):
-            logging.debug("raw is list")
-            for entry in raw:
-                match = self.re.fullmatch(entry)
-        else:
-            match = self.re.fullmatch(raw)
 
-        if not match:
-            logger.warning ("Could not parse {}".format(raw))
+        match = ENTITLEMENT_REGEX['strict' if strict else 'lax'].fullmatch(raw)
+
+        if match is None:
+            logger.info('Input did not match (strict=%s): %s', strict, raw)
+
+            msg = 'Input does not seem to be an AARC-G002 Entitlement'
+
             if strict:
-                raise Failure(message="Failed to parse entitlements attribute [1/2]")
-            return
+                raise ValueError(msg)
+            raise ValueError(msg + ' (Omitting the group authority was permitted)')
 
-        logger.debug("Parsing entitlement attribute: {}".format(match.capturesdict()))
+
+        capturesdict = match.capturesdict()
+        logger.debug("Extracting entitlement attributes: %s", capturesdict)
         try:
-            [self.namespace_id] = match.captures('nid')
-            [self.delegated_namespace] = match.captures('delegated_namespace')
-            self.subnamespaces = match.captures('subnamespace')
+            [self.namespace_id] = capturesdict.get('nid')
+            [self.delegated_namespace] = capturesdict.get('delegated_namespace')
+            self.subnamespaces = capturesdict.get('subnamespace')
 
-            [self.group] = match.captures('group')
-            self.subgroups = match.captures('subgroup')
-            [self.role] = match.captures('role') or [None]
+            [self.group] = capturesdict.get('group')
+            self.subgroups = capturesdict.get('subgroup')
+            [self.role] = capturesdict.get('role') or [None]
 
             [self.group_authority] = match.captures('group_authority') or [None]
-        except ValueError:
-            raise Failure(message="Failed to parse entitlements attribute [2/2]")
+        except ValueError as e:
+            logger.error('On assigning the captured attributes: %s', e)
+            raise Exception('Error extracting captured attributes') from e
 
     def __repr__(self):
         """Serialize the entitlement to the AARC-G002 format.
@@ -103,6 +92,7 @@ class Aarc_g002_entitlement :
                 'subgroups': ''.join([':{}'.format(grp) for grp in self.subgroups]),
                 'role': ':role={}'.format(self.role) if self.role else ''
         }))
+
     def __str__(self):
         """Return the entitlement in human-readable string form."""
         return ((
@@ -162,14 +152,9 @@ class Aarc_g002_entitlement :
 
         return True
 
-    def __le__(self,other):
+    def __le__(self, other):
         """ Check if self is contained in other.
         Please use "is_contained_in", see below"""
-        if not hasattr(self, 'namespace_id'):
-            return False
-        if not hasattr(other, 'namespace_id'):
-            return False
-
         if self.namespace_id != other.namespace_id:
             return False
 
@@ -188,6 +173,9 @@ class Aarc_g002_entitlement :
                 return False
 
         if self.role is not None:
+            if self.role != other.role:
+                return False
+
             try:
                 myown_subgroup_for_role = self.subgroups[-1]
             except IndexError:
@@ -199,8 +187,6 @@ class Aarc_g002_entitlement :
 
             if myown_subgroup_for_role != other_subgroup_for_role:
                 return False
-            if self.role != other.role:
-                return False
 
         return True
 
@@ -208,89 +194,4 @@ class Aarc_g002_entitlement :
         """ Check if self is contained in other """
         return (self <= other)
 
-
-if __name__ == '__main__':
-    required_group= 'urn:geant:h-df.de:group:aai-admin:role=member#unity.helmholtz-data-federation.de'
-    actual_group  = 'urn:geant:h-df.de:group:aai-admin:role=member#unity.helmholtz-data-federation.de'
-    required_entitlement = Aarc_g002_entitlement(required_group)
-    actual_entitlement   = Aarc_g002_entitlement(actual_group)
-    print('\n1: Simple case: Different authorities, everything else same')
-    print('    Required group: ' + required_group)
-    print('    Actual   group: ' + actual_group)
-    print('    is_contained_in:   => {}'.format(required_entitlement.is_contained_in(actual_entitlement)))
-    print('        (are equal:    => {})'.format(required_entitlement == actual_entitlement))
-
-
-    required_group= 'urn:geant:h-df.de:group:aai-admin:role=member#unity.helmholtz-data-federation.de'
-    actual_group  = 'urn:geant:h-df.de:group:aai-admin:role=member#backupserver.used.for.developmt.de'
-    required_entitlement = Aarc_g002_entitlement(required_group)
-    actual_entitlement   = Aarc_g002_entitlement(actual_group)
-
-    print('\n2: Simple case: Different authorities, everything else same')
-    print('    Required group: ' + required_group)
-    print('    Actual   group: ' + actual_group)
-    print('    is_contained_in:   => {}'.format(required_entitlement.is_contained_in(actual_entitlement)))
-    print('        (are equal:    => {})'.format(required_entitlement == actual_entitlement))
-
-
-    required_group= 'urn:geant:h-df.de:group:aai-admin#unity.helmholtz-data-federation.de'
-    actual_group  = 'urn:geant:h-df.de:group:aai-admin:role=member#backupserver.used.for.developmt.de'
-    required_entitlement = Aarc_g002_entitlement(required_group)
-    actual_entitlement   = Aarc_g002_entitlement(actual_group)
-
-    print('\n3: Role assigned but not required')
-    print('    Required group: ' + required_group)
-    print('    Actual   group: ' + actual_group)
-    print('    is_contained_in:   => {}'.format(required_entitlement.is_contained_in(actual_entitlement)))
-    print('        (are equal:    => {})'.format(required_entitlement == actual_entitlement))
-
-
-    required_group= 'urn:geant:h-df.de:group:aai-admin:role=member#unity.helmholtz-data-federation.de'
-    actual_group  = 'urn:geant:h-df.de:group:aai-admin#backupserver.used.for.developmt.de'
-    required_entitlement = Aarc_g002_entitlement(required_group)
-    actual_entitlement   = Aarc_g002_entitlement(actual_group)
-
-    print('\n4: Role required but not assigned')
-    print('    Required group: ' + required_group)
-    print('    Actual   group: ' + actual_group)
-    print('    is_contained_in:   => {}'.format(required_entitlement.is_contained_in(actual_entitlement)))
-    print('        (are equal:    => {})'.format(required_entitlement == actual_entitlement))
-
-
-    required_group= 'urn:geant:h-df.de:group:aai-admin:special-admins#unity.helmholtz-data-federation.de'
-    actual_group  = 'urn:geant:h-df.de:group:aai-admin#backupserver.used.for.developmt.de'
-    required_entitlement = Aarc_g002_entitlement(required_group)
-    actual_entitlement   = Aarc_g002_entitlement(actual_group)
-
-    print('\n5: Subgroup required, but not available')
-    print('    Required group: ' + required_group)
-    print('    Actual   group: ' + actual_group)
-    print('    is_contained_in:   => {}'.format(required_entitlement.is_contained_in(actual_entitlement)))
-    print('        (are equal:    => {})'.format(required_entitlement == actual_entitlement))
-
-    required_group= 'urn:geant:h-df.de:group:aai-admin#unity.helmholtz-data-federation.de'
-    actual_group  = 'urn:geant:h-df.de:group:aai-admin:testgroup:special-admins#backupserver.used.for.developmt.de'
-    required_entitlement = Aarc_g002_entitlement(required_group)
-    actual_entitlement   = Aarc_g002_entitlement(actual_group)
-
-    print('\n6: Edge case: User in subgroup, but only supergroup required')
-    print('    Required group: ' + required_group)
-    print('    Actual   group: ' + actual_group)
-    print('    is_contained_in:   => {}'.format(required_entitlement.is_contained_in(actual_entitlement)))
-    print('        (are equal:    => {})'.format(required_entitlement == actual_entitlement))
-
-
-    required_group= 'urn:geant:h-df.de:group:aai-admin:role=admin#unity.helmholtz-data-federation.de'
-    actual_group  = 'urn:geant:h-df.de:group:aai-admin:special-admins:role=admin#backupserver.used.for.developmt.de'
-    required_entitlement = Aarc_g002_entitlement(required_group)
-    actual_entitlement   = Aarc_g002_entitlement(actual_group)
-
-    print('\n7: role required for supergroup but only assigned for subgroup')
-    print('    Required group: ' + required_group)
-    print('    Actual   group: ' + actual_group)
-    print('    is_contained_in:   => {}'.format(required_entitlement.is_contained_in(actual_entitlement)))
-    print('        (are equal:    => {})'.format(required_entitlement == actual_entitlement))
-
-
-
-    #TODO: Add more Weird combinations of these with roles
+# TODO: Add more Weird combinations of these with roles
