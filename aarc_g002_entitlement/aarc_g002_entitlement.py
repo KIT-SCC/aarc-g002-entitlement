@@ -8,6 +8,11 @@
 
 import logging
 import regex
+# python2 / python3 compatible way to get access to urlencode and decode
+try:
+    from urllib.parse import unquote, quote_plus
+except ImportError:
+    from urllib import unquote, quote_plus
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +50,11 @@ class Aarc_g002_entitlement :
     def __init__(self, raw, strict=True):
         """Parse a raw EduPerson entitlement string in the AARC-G002 format."""
 
-        match = ENTITLEMENT_REGEX['strict' if strict else 'lax'].fullmatch(raw)
+        raw_dec = unquote(raw)
+        match = ENTITLEMENT_REGEX['strict' if strict else 'lax'].fullmatch(raw_dec)
 
         if match is None:
-            logger.info('Input did not match (strict=%s): %s', strict, raw)
+            logger.info('Input did not match (strict=%s): %s', strict, raw_dec)
 
             msg = 'Input does not seem to be an AARC-G002 Entitlement'
 
