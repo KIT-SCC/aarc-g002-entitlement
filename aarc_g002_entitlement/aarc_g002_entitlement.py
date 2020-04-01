@@ -47,21 +47,23 @@ class Aarc_g002_entitlement :
     As specified in: https://aarc-project.eu/guidelines/aarc-g002/
     """
 
-    def __init__(self, raw, strict=True):
+    def __init__(self, raw, strict=True, force=True):
         """Parse a raw EduPerson entitlement string in the AARC-G002 format."""
 
-        raw_dec = unquote(raw)
-        match = ENTITLEMENT_REGEX['strict' if strict else 'lax'].fullmatch(raw_dec)
+        self.raw = unquote(raw)
+        match = ENTITLEMENT_REGEX['strict' if strict else 'lax'].fullmatch(self.raw)
 
         if match is None:
-            logger.info('Input did not match (strict=%s): %s', strict, raw_dec)
+            logger.info('Input did not match (strict=%s): %s', strict, self.raw)
 
             msg = 'Input does not seem to be an AARC-G002 Entitlement'
 
-            if strict:
-                raise ValueError(msg)
-            raise ValueError(msg + ' (Omitting the group authority was permitted)')
+            if force:
+                if strict:
+                    raise ValueError(msg)
+                raise ValueError(msg + ' (Omitting the group authority was permitted)')
 
+            self.is_aarc_g002 = False
 
         capturesdict = match.capturesdict()
         logger.debug("Extracting entitlement attributes: %s", capturesdict)
@@ -74,10 +76,12 @@ class Aarc_g002_entitlement :
             self.subgroups = capturesdict.get('subgroup')
             [self.role] = capturesdict.get('role') or [None]
 
-            [self.group_authority] = match.captures('group_authority') or [None]
+            [self.group_authority] = capturesdict.get('group_authority') or [None]
         except ValueError as e:
             logger.error('On assigning the captured attributes: %s', e)
             raise Exception('Error extracting captured attributes: %s', e)
+
+        self.is_aarc_g002 = True
 
     def __repr__(self):
         """Serialize the entitlement to the AARC-G002 format.
@@ -85,6 +89,11 @@ class Aarc_g002_entitlement :
         This is the inverse to `__init__` and thus `ent_str == repr(Aarc_g002_entitlement(ent_str))`
         holds for any valid entitlement.
         """
+
+        # handle non-g002
+        if not self.is_aarc_g002:
+            return self.raw
+
         return ((
             'urn:{namespace_id}:{delegated_namespace}{subnamespaces}' +
             ':group:{group}{subgroups}{role}' +
@@ -101,6 +110,11 @@ class Aarc_g002_entitlement :
 
     def __str__(self):
         """Return the entitlement in human-readable string form."""
+
+        # handle non-g002
+        if not self.is_aarc_g002:
+            return self.raw
+
         return ((
             '<Aarc_g002_entitlement' +
             ' namespace={namespace_id}:{delegated_namespace}{subnamespaces}' +
@@ -116,7 +130,13 @@ class Aarc_g002_entitlement :
                 'subgroups': ''.join([',{}'.format(grp) for grp in self.subgroups]),
                 'role': ' role={}'.format(self.role) if self.role else ''
         }))
+
     def __mstr__(self):
+
+        # handle non-g002
+        if not self.is_aarc_g002:
+            return self.raw
+
         return ((
             'namespace_id:        {namespace_id}' +
             '\ndelegated_namespace: {delegated_namespace}' +
@@ -137,6 +157,13 @@ class Aarc_g002_entitlement :
 
     def __eq__(self, other):
         """ Check if other object is equal """
+
+        # handle non-g002
+        if not self.is_aarc_g002:
+            if not other.is_aarc_g002:
+                return self.raw == other.raw
+            return False
+
         if self.namespace_id != other.namespace_id:
             return False
 
@@ -161,6 +188,13 @@ class Aarc_g002_entitlement :
     def __le__(self, other):
         """ Check if self is contained in other.
         Please use "is_contained_in", see below"""
+
+        # handle non-g002
+        if not self.is_aarc_g002:
+            if not other.is_aarc_g002:
+                return self.raw == other.raw
+            return False
+
         if self.namespace_id != other.namespace_id:
             return False
 
