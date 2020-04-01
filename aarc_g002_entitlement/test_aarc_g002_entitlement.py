@@ -3,7 +3,7 @@ import unittest
 from aarc_g002_entitlement import Aarc_g002_entitlement
 
 
-class Aarc_g002(unittest.TestCase):
+class TestEntitlement(unittest.TestCase):
     def test_equality(self):
         required_group = "urn:geant:h-df.de:group:aai-admin:role = member#unity.helmholtz-data-federation.de"
         actual_group = "urn:geant:h-df.de:group:aai-admin:role = member#unity.helmholtz-data-federation.de"
