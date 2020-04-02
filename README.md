@@ -1,27 +1,29 @@
 # AARC G002 Entitlement Parser
 
 # Introduction
-As part of the AARC Project several recommendations were made. G002
-https://aarc-project.eu/guidelines/aarc-g002 describes encoding group
-membership in entitlements.
+This package provides a python Class to parse and compare entitlements according
+to the AARC-G002 Recommendation https://aarc-project.eu/guidelines/aarc-g002.
 
-This package provides a python Class to parse and compare such entitlements.
 
 # Example
 
-```
+```python
 from aarc_g002_entitlement import Aarc_g002_entitlement
 
-required_group= 'urn:geant:h-df.de:group:aai-admin'
-actual_group  = 'urn:geant:h-df.de:group:aai-admin:role=member#backupserver.used.for.developmt.de'
+required = Aarc_g002_entitlement(
+    'urn:geant:h-df.de:group:aai-admin',
+    strict=False,
+)
+actual = Aarc_g002_entitlement(
+    'urn:geant:h-df.de:group:aai-admin:role=member#backupserver.used.for.developmt.de',
+)
 
-required_entitlement = Aarc_g002_entitlement(required_group, strict=False)
-actual_entitlement   = Aarc_g002_entitlement(actual_group)
+# is a user with actual permitted to use a resource which needs required?
+permitted = required.is_contained_in(actual) # True in this case
 
-print('    is_contained_in:   => {}'.format(required_entitlement.is_contained_in(actual_entitlement)))
-print('        (are equal:    => {})'.format(required_entitlement == actual_entitlement))
+# are the two entitlements the same?
+equals = required == actual # False in this case
 ```
-
 
 For more examples: `./example.py`
 
@@ -30,15 +32,17 @@ For more examples: `./example.py`
 pip --user install aarc-g002-entitlement
 ```
 
-# Note
+# Documentation
+```
+tox -e docs
+```
+After this, the documentation should be located at `doc/build/index.html`.
 
-This code allows an intentional exception from implementing the standard:
-AARC-G002 makes the issuing authority mandatory (non-empty-string).
-However, admins that specify the required entitlement don't care about
-specifying the authority.
-Therefore, the code allows a laxer handling, in that it does
-accept entitlements that don't specify an authority, if the "strict=False"
-argument is passed.
+# Tests
+Run tests for all supported python versions
+```
+tox
+```
 
 # Funding Notice
 The AARC project has received funding from the European Union’s Horizon

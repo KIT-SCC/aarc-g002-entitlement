@@ -1,36 +1,32 @@
 AARC-G002 Entitlements
 ======================
 
-Release v\ |version|.
-
 This package provides a python Class to parse and compare entitlements according
-to the AARC-G002 Recommendation https://aarc-project.eu/guidelines/aarc-g002
+to the AARC-G002 Recommendation https://aarc-project.eu/guidelines/aarc-g002.
 
 
 Example
 -------
 
-.. code-block:: console
+.. code-block:: python
 
- from aarc_g002_entitlement import Aarc_g002_entitlement
+     from aarc_g002_entitlement import Aarc_g002_entitlement
 
- required_group= 'urn:geant:h-df.de:group:aai-admin'
- actual_group  = 'urn:geant:h-df.de:group:aai-admin:role=member#backupserver.used.for.developmt.de'
+     required = Aarc_g002_entitlement(
+         'urn:geant:h-df.de:group:aai-admin',
+         strict=False,
+     )
+     actual = Aarc_g002_entitlement(
+         'urn:geant:h-df.de:group:aai-admin:role=member#backupserver.used.for.developmt.de',
+     )
 
- required_entitlement = Aarc_g002_entitlement(required_group, strict=False)
- actual_entitlement   = Aarc_g002_entitlement(actual_group)
+     # is a user with actual permitted to use a resource which needs required?
+     permitted = required.is_contained_in(actual) # True in this case
 
- print('\n3: Role assigned but not required')
- print('    is_contained_in:   => {}'.format(required_entitlement.is_contained_in(actual_entitlement)))
- print('        (are equal:    => {})'.format(required_entitlement == actual_entitlement))
+     # are the two entitlements the same?
+     equals = required == actual # False in this case
 
-
-Note
-----
-This code allows on intentional exception from implementing the standard:
-AARC-G002 makes the issuing authority mandatory (non-empty-string).
-However, admins that specify the required entitlement don't care about
-specifying this. 
-Therefore, the code allows a laxer handling, in that it does
-accept entitlements that don't specify an authority, if the "strict=False"
-argument is passed.
+API
+---
+.. automodule:: aarc_g002_entitlement
+   :members:
