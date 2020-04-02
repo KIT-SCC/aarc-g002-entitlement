@@ -51,9 +51,9 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = u'aarc_g002_entitlement'
-copyright = u'2017-present, '
-author = u"Marcus Hardt"
+project = "aarc_g002_entitlement"
+copyright = "2017-present, Markus Hardt"
+author = "Marcus Hardt"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -100,8 +100,8 @@ html_theme = 'alabaster'
 html_theme_options = {
     'logo': 'logo.png',
     'show_powered_by': False,
-    'github_user': 'indigo-dc',
-    'github_repo': 'aarc_g002_entitlement',
+    'github_user': 'KIT-SCC',
+    'github_repo': 'aarc-g002-entitlement',
     'github_banner': False,
     'show_related': False,
     'note_bg': '#FFF59C',
@@ -127,11 +127,8 @@ html_use_smartypants = False
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
-#    'index':    ['sidebar.html', 'sourcelink.html', 'searchbox.html'],
-#    '**':       ['sidebar.html', 'localtoc.html', 'relations.html',
-#                 'sourcelink.html', 'searchbox.html'],
-    'index':       ['about.html', 'navigation.html', 'relations.html',
-                 'sourcelink.html', 'searchbox.html', 'sidebarfooter.html'],
+    # 'index': ['about.html', 'navigation.html', 'relations.html', 'sourcelink.html', 'searchbox.html', 'sidebarfooter.html'],
+    'index': ['about.html', 'relations.html', 'sourcelink.html', 'sidebarfooter.html'],
 }
 
 
@@ -211,3 +208,10 @@ latex_logo = ""
 
 # If false, no module index is generated.
 #latex_domain_indices = True
+
+# enable member doc strings
+# https://stackoverflow.com/questions/56693832/should-sphinx-be-able-to-document-instance-attributes-in-a-class
+autodoc_default_options = {
+    'members':         True,
+    'member-order':    'bysource',
+}
