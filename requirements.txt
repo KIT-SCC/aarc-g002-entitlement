@@ -1,1 +1,4 @@
+sphinx
+sphinx_argparse
+aarc_g002_entitlements
 regex
