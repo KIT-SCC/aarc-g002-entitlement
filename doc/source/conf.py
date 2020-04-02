@@ -52,8 +52,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = "aarc_g002_entitlement"
-copyright = "2017-present, Markus Hardt"
-author = "Marcus Hardt"
+copyright = "2017-present, Marcus Hardt, Lukas Burgey"
+author = "Marcus Hardt, Lukas Burgey"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
