@@ -59,6 +59,11 @@ class Aarc_g002_entitlement:
     :param force: `False` to allow entitlements which don't follow the AARC-G002 recommendation and `True` otherwise, defaults to `True`.
     :type force: bool, optional
 
+    :raises ValueError: If raw does not contain a group_authority and strict is `True`,
+        or if the raw entitlement is not following the AARC-G002 recommendation at all and force is `True`.
+
+    :raises Exception: If the attributes extracted from the entitlement could not be assigned to this instance.
+
     Available attributes for AARC-G002 entitlements are listed here.
     For entitlements not following the recommendation, these are set to their default values.
     """
