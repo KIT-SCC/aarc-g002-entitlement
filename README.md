@@ -12,9 +12,11 @@ from aarc_g002_entitlement import Aarc_g002_entitlement
 
 required = Aarc_g002_entitlement(
     'urn:geant:h-df.de:group:aai-admin',
-    strict=False)
+    strict=False,
+)
 actual = Aarc_g002_entitlement(
-    'urn:geant:h-df.de:group:aai-admin:role=member#backupserver.used.for.developmt.de')
+    'urn:geant:h-df.de:group:aai-admin:role=member#backupserver.used.for.developmt.de',
+)
 
 # is a user with actual permitted to use a resource which needs required?
 permitted = required.is_contained_in(actual) # True in this case
