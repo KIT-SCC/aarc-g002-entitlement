@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 # MIT License{{{
 #
 # Copyright (c) 2017 - 2019 Karlsruhe Institute of Technology - Steinbuch Centre for Computing
@@ -24,5 +25,5 @@ import setuptools
 
 setuptools.setup(
     setup_requires=['pbr>=1.8'],
-    install_requires=['regex'],
-    pbr=True)
+    pbr=True,
+)
