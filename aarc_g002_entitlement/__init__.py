@@ -46,12 +46,11 @@ class Aarc_g002_entitlement:
     as specified in https://aarc-project.eu/guidelines/aarc-g002.
 
     Class instances can be tested for equality and less-than-or-equality.
-    The member is_contained_in can be used to checks if a user with an entitlement `U` is permitted to use a resource which requires a certain entitlement `R`, like so:
+    The py:meth:is_contained_in can be used to checks if a user with an entitlement `U` is permitted to use a resource which requires a certain entitlement `R`, like so:
 
         `R`.is_contained_in(`U`)
 
-    :param raw: The entitlement to parse. If the entitlement is '%xx' encoded it is decoded before parsing.
-    :type raw: str
+    :param str raw: The entitlement to parse. If the entitlement is '%xx' encoded it is decoded before parsing.
 
     :param strict: `False` to ignore a missing group_authority and `True` otherwise, defaults to `True`.
     :type strict: bool, optional
@@ -59,7 +58,8 @@ class Aarc_g002_entitlement:
     :param force: `False` to allow entitlements which don't follow the AARC-G002 recommendation and `True` otherwise, defaults to `True`.
     :type force: bool, optional
 
-    :raises ValueError: If raw does not contain a group_authority and strict is `True`,
+    :raises ValueError:
+        If raw does not contain a group_authority and strict is `True`,
         or if the raw entitlement is not following the AARC-G002 recommendation at all and force is `True`.
 
     :raises Exception: If the attributes extracted from the entitlement could not be assigned to this instance.
