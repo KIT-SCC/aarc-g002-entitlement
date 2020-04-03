@@ -5,16 +5,18 @@ This package provides a python Class to parse and compare entitlements according
 to the AARC-G002 Recommendation https://aarc-project.eu/guidelines/aarc-g002.
 
 
-# Example
+## Example
 
 ```python
 from aarc_g002_entitlement import Aarc_g002_entitlement
 
 required = Aarc_g002_entitlement(
     'urn:geant:h-df.de:group:aai-admin',
-    strict=False)
+    strict=False,
+)
 actual = Aarc_g002_entitlement(
-    'urn:geant:h-df.de:group:aai-admin:role=member#backupserver.used.for.developmt.de')
+    'urn:geant:h-df.de:group:aai-admin:role=member#backupserver.used.for.developmt.de',
+)
 
 # is a user with actual permitted to use a resource which needs required?
 permitted = required.is_contained_in(actual) # True in this case
@@ -23,22 +25,24 @@ permitted = required.is_contained_in(actual) # True in this case
 equals = required == actual # False in this case
 ```
 
-For more examples: `./example.py`
-
-# Installation
-```
-pip --user install aarc-g002-entitlement
+For more examples:
+```shell
+./example.py
 ```
 
-# Documentation
+## Installation
+```shell
+pip install --user aarc-g002-entitlement
 ```
-tox -e docs
-```
-After this, the documentation should be located at `doc/build/index.html`.
+
+## Documentation
+The documentation is available at [readthedocs](https://aarc-g002-entitlement.readthedocs.io/en/latest/).
+
 
 # Tests
-Run tests for all supported python versions
-```
+Run tests for the supported python versions:
+```shell
+pip install tox
 tox
 ```
 
@@ -46,3 +50,4 @@ tox
 The AARC project has received funding from the European Union’s Horizon
 2020 research and innovation programme under grant agreement No 653965 and
 730941.
+
