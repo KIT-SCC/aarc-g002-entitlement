@@ -1,3 +1,4 @@
+[![Documentation Status](https://readthedocs.org/projects/aarc-g002-entitlement/badge/?version=latest&token=5f5165c8ebde7726ae9df9f62331a59e7344d6e61a4bb9ea8c97cecfae25f4f3)](https://aarc-g002-entitlement.readthedocs.io/en/latest/?badge=latest)
 # AARC G002 Entitlement Parser
 
 # Introduction
@@ -35,6 +36,8 @@ pip --user install aarc-g002-entitlement
 tox -e docs
 ```
 After this, the documentation should be located at `doc/build/index.html`.
+
+Documentation is also available at [Readthedocs](https://aarc-g002-entitlement.readthedocs.io/en/latest)
 
 # Tests
 Run tests for all supported python versions
