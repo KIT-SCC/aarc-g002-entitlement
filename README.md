@@ -1,3 +1,4 @@
+[![Documentation Status](https://readthedocs.org/projects/aarc-g002-entitlement/badge/?version=latest)](https://aarc-g002-entitlement.readthedocs.io/en/latest/?badge=latest)
 # AARC G002 Entitlement Parser
 
 # Introduction
@@ -31,6 +32,9 @@ pip --user install aarc-g002-entitlement
 ```
 
 # Documentation
+Docs are hosted on [Readthedocs](https://aarc-g002-entitlement.readthedocs.io/en/latest/)
+
+And can be self generated using:
 ```
 tox -e docs
 ```
