@@ -130,13 +130,14 @@ class Aarc_g002_entitlement:
 
         return ((
             'urn:{namespace_id}:{delegated_namespace}{subnamespaces}' +
-            ':group:{group}{subgroups}{role}' +
-            '#{group_authority}'
+            ':group:{group}{subgroups}{role}{group_authority}'
         ).format(**{
                 'namespace_id': self.namespace_id,
                 'delegated_namespace': self.delegated_namespace,
                 'group': self.group,
-                'group_authority': self.group_authority,
+                'group_authority': (
+                    '#{}'.format(self.group_authority) if self.group_authority else ''
+                ),
                 'subnamespaces': ''.join([':{}'.format(ns) for ns in self.subnamespaces]),
                 'subgroups': ''.join([':{}'.format(grp) for grp in self.subgroups]),
                 'role': ':role={}'.format(self.role) if self.role else ''
