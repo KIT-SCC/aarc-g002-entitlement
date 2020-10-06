@@ -55,12 +55,12 @@ class Aarc_g002_entitlement:
     :param strict: `False` to ignore a missing group_authority and `True` otherwise, defaults to `True`.
     :type strict: bool, optional
 
-    :param force: `False` to allow entitlements which don't follow the AARC-G002 recommendation and `True` otherwise, defaults to `True`.
-    :type force: bool, optional
+    :param raise_error_if_unparseable: `True` to raise a ValueError, if the entitlements does not follow the AARC-G002 recommendation and `True` to create the (largely empty) entitlement object, defaults to `False`.
+    :type raise_error_if_unparseable: bool, optional
 
     :raises ValueError:
         If raw does not contain a group_authority and strict is `True`,
-        or if the raw entitlement is not following the AARC-G002 recommendation at all and force is `True`.
+        or if the raw entitlement is not following the AARC-G002 recommendation at all and `raise_error_if_unparseable is `True`.
 
     :raises Exception: If the attributes extracted from the entitlement could not be assigned to this instance.
 
@@ -83,7 +83,7 @@ class Aarc_g002_entitlement:
     #: None if the entitlement has no group_authority.
     group_authority = None
 
-    def __init__(self, raw, strict=True, force=True):
+    def __init__(self, raw, strict=True, raise_error_if_unparseable=False):
         """Parse a raw EduPerson entitlement string in the AARC-G002 format."""
 
         self._raw = unquote(raw)
@@ -94,7 +94,7 @@ class Aarc_g002_entitlement:
 
             msg = 'Input does not seem to be an AARC-G002 Entitlement'
 
-            if force:
+            if raise_error_if_unparseable:
                 if strict:
                     raise ValueError(msg)
                 raise ValueError(msg + ' (Omitting the group authority was permitted)')
@@ -271,6 +271,7 @@ class Aarc_g002_entitlement:
     @property
     def is_aarc_g002(self):
         """ Check if this entitlements follows the AARC-G002 recommendation
+        Note this only works with raise_error_if_unparseable=False
 
         :return: True if the recommendation is followed
         :rtype: bool
