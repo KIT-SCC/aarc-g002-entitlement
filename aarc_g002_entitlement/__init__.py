@@ -3,8 +3,7 @@
 # This code is distributed under the MIT License
 # pylint
 # vim: tw=100 foldmethod=indent
-# pylint: disable=bad-continuation, invalid-name, superfluous-parens
-# pylint: disable=bad-whitespace
+# pylint: disable=invalid-name, superfluous-parens, logging-too-many-args
 
 import logging
 import regex
@@ -21,23 +20,23 @@ logger = logging.getLogger(__name__)
 ENTITLEMENT_REGEX = {
     'strict':  regex.compile(
         r'urn:' +
-        r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' +     # Namespace-ID and delegated URN namespace
-        r'(:(?P<subnamespace>[^:]+))*?' +                      # Sub-namespaces
+        r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' + # Namespace-ID & delegated URN namespace
+        r'(:(?P<subnamespace>[^:]+))*?' +                  # Sub-namespaces
         r':group:' +
-        r'(?P<group>[^:]+)' +                                  # Root group
-        r'(:(?P<subgroup>[^:]+))*?' +                          # Sub-groups
-        r'(:role=(?P<role>.+))?' +                             # Role of the user in the deepest group
-        r'#(?P<group_authority>.+)'                               # Authoritative soruce of the entitlement (URN)
+        r'(?P<group>[^:]+)' +                              # Root group
+        r'(:(?P<subgroup>[^:]+))*?' +                      # Sub-groups
+        r'(:role=(?P<role>.+))?' +                         # Role of the user in the deepest group
+        r'#(?P<group_authority>.+)'                        # Authoritative source of the entitlement
     ),
     'lax': regex.compile(
         r'urn:' +
-        r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' +     # Namespace-ID and delegated URN namespace
-        r'(:(?P<subnamespace>[^:]+))*?' +                      # Sub-namespaces
+        r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' + # Namespace-ID & delegated URN namespace
+        r'(:(?P<subnamespace>[^:]+))*?' +                  # Sub-namespaces
         r':group:' +
-        r'(?P<group>[^:#]+)' +                                 # Root group
-        r'(:(?P<subgroup>[^:#]+))*?' +                         # Sub-groups
-        r'(:role=(?P<role>[^#]+))?' +                         # Role of the user in the deepest group
-        r'(#(?P<group_authority>.+))?'                            # Authoritative source of the entitlement (URN)
+        r'(?P<group>[^:#]+)' +                             # Root group
+        r'(:(?P<subgroup>[^:#]+))*?' +                     # Sub-groups
+        r'(:role=(?P<role>[^#]+))?' +                      # Role of the user in the deepest group
+        r'(#(?P<group_authority>.+))?'                     # Authoritative source of the entitlement
     )
 }
 
@@ -46,28 +45,35 @@ class Aarc_g002_entitlement:
     as specified in https://aarc-project.eu/guidelines/aarc-g002.
 
     Class instances can be tested for equality and less-than-or-equality.
-    The py:meth:is_contained_in can be used to checks if a user with an entitlement `U` is permitted to use a resource which requires a certain entitlement `R`, like so:
+    The py:meth:is_contained_in can be used to checks if a user with an entitlement `U`
+    is permitted to use a resource which requires a certain entitlement `R`, like so:
 
         `R`.is_contained_in(`U`)
 
-    :param str raw: The entitlement to parse. If the entitlement is '%xx' encoded it is decoded before parsing.
+    :param str raw: The entitlement to parse. If the entitlement is '%xx' encoded it is decoded
+    before parsing.
 
-    :param strict: `False` to ignore a missing group_authority and `True` otherwise, defaults to `True`.
+    :param strict: `False` to ignore a missing group_authority and `True` otherwise, defaults
+    to `True`.
     :type strict: bool, optional
 
-    :param raise_error_if_unparseable: `True` to raise a ValueError, if the entitlements does not follow the AARC-G002 recommendation and `True` to create the (largely empty) entitlement object, defaults to `False`.
+    :param raise_error_if_unparseable: `True` to raise a ValueError, if the entitlements does
+    not follow the AARC-G002 recommendation and `True` to create the (largely empty) entitlement
+    object, defaults to `False`.
     :type raise_error_if_unparseable: bool, optional
 
     :raises ValueError:
         If raw does not contain a group_authority and strict is `True`,
-        or if the raw entitlement is not following the AARC-G002 recommendation at all and `raise_error_if_unparseable is `True`.
+        or if the raw entitlement is not following the AARC-G002 recommendation at all and
+        `raise_error_if_unparseable is `True`.
 
-    :raises Exception: If the attributes extracted from the entitlement could not be assigned to this instance.
+    :raises Exception: If the attributes extracted from the entitlement could not be assigned
+    to this instance.
 
     Available attributes for AARC-G002 entitlements are listed here.
     For entitlements not following the recommendation, these are set to their default values.
     """
-
+    # pylint: disable=too-many-instance-attributes
     #:
     namespace_id = ''
     #:
@@ -115,7 +121,7 @@ class Aarc_g002_entitlement:
             [self.group_authority] = capturesdict.get('group_authority') or [None]
         except ValueError as e:
             logger.error('On assigning the captured attributes: %s', e)
-            raise Exception('Error extracting captured attributes')
+            raise Exception('Error extracting captured attributes') from e
 
     def __repr__(self):
         """Serialize the entitlement to the AARC-G002 format.
@@ -167,11 +173,10 @@ class Aarc_g002_entitlement:
         }))
 
     def __mstr__(self):
-
         # handle non-g002
         if not self.is_aarc_g002:
             return self._raw
-
+    #
         return ((
             'namespace_id:        {namespace_id}' +
             '\ndelegated_namespace: {delegated_namespace}' +
@@ -191,12 +196,13 @@ class Aarc_g002_entitlement:
         }))
 
     def __eq__(self, other):
+        # pylint: disable=too-many-return-statements
         """ Check if other object is equal """
 
         # handle non-g002
         if not self.is_aarc_g002:
             if not other.is_aarc_g002:
-                return self._raw == other.raw
+                return self._raw == other._raw
             return False
 
         if self.namespace_id != other.namespace_id:
@@ -221,6 +227,7 @@ class Aarc_g002_entitlement:
         return True
 
     def __le__(self, other):
+        # pylint: disable=too-many-return-statements, too-many-branches
         """ Check if self is contained in other.
         Please use "is_contained_in", see below"""
 
