@@ -96,17 +96,21 @@ class Aarc_g002_entitlement:
         match = ENTITLEMENT_REGEX['strict' if strict else 'lax'].fullmatch(self._raw)
 
         if match is None:
-            logger.info('Input did not match (strict=%s): %s', strict, self._raw)
+            logger.info('Entitlement is not AARC-G002 conform (strict=%s): %s', strict, self._raw)
 
-            msg = 'Input does not seem to be an AARC-G002 Entitlement'
+            verbose=0
+            if verbose:
+                logger.info(F"Entitlement in question: {self._raw}")
 
             if raise_error_if_unparseable:
+                msg = 'Input does not seem to be an AARC-G002 Entitlement'
+                logger.error("raising exception")
                 if strict:
-                    raise ValueError(msg)
-                raise ValueError(msg + ' (Omitting the group authority was permitted)')
+                    raise ValueError(msg + ' (strict mode)')
+                raise ValueError(msg + ' (lax mode)')
 
             # no attributes captured for non-g002
-            return
+            return None
 
         capturesdict = match.capturesdict()
         logger.debug("Extracting entitlement attributes: %s", capturesdict)
@@ -175,7 +179,7 @@ class Aarc_g002_entitlement:
     def __mstr__(self):
         # handle non-g002
         if not self.is_aarc_g002:
-            return self._raw
+            return None
     #
         return ((
             'namespace_id:        {namespace_id}' +
@@ -250,11 +254,18 @@ class Aarc_g002_entitlement:
         if self.group != other.group:
             return False
 
-        for subgroup in self.subgroups:
-            if subgroup not in other.subgroups:
-                return False
+        if other.subgroups:
+            logger.debug("Checking subgroups")
+
+            for subgroup in self.subgroups:
+                logger.debug(F"is {other.subgroups} in {subgroup}  ??")
+                if subgroup not in other.subgroups:
+                    logger.debug("    => No")
+                    return False
+                logger.debug("    => Yes")
 
         if self.role is not None:
+            logger.debug ("Checking role")
             if self.role != other.role:
                 return False
 
@@ -269,7 +280,6 @@ class Aarc_g002_entitlement:
 
             if myown_subgroup_for_role != other_subgroup_for_role:
                 return False
-
         return True
 
     def is_contained_in(self, other):
