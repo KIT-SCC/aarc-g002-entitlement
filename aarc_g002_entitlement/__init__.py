@@ -70,7 +70,7 @@ class Aarc_g002_entitlement:
     :type strict: bool, optional
 
     :param raise_error_if_unparseable: `True` to raise a ValueError, if the entitlements does
-    not follow the AARC-G002 recommendation and `True` to create the (largely empty) entitlement
+    not follow the AARC-G002 recommendation and `False` to create the (largely empty) entitlement
     object, defaults to `False`.
     :type raise_error_if_unparseable: bool, optional
 
