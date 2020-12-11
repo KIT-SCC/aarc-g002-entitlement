@@ -170,44 +170,22 @@ class Aarc_g002_entitlement:
         if not self.is_aarc_g002:
             return self._raw
 
-        return ((
-            '<Aarc_g002_entitlement' +
-            ' namespace={namespace_id}:{delegated_namespace}{subnamespaces}' +
-            ' group={group}{subgroups}' +
-            '{role}' +
-            ' auth={group_authority}>'
-        ).format(**{
-                'namespace_id': self.namespace_id,
-                'delegated_namespace': self.delegated_namespace,
-                'group': self.group,
-                'group_authority': self.group_authority,
-                'subnamespaces': ''.join([',{}'.format(ns) for ns in self.subnamespaces]),
-                'subgroups': ''.join([',{}'.format(grp) for grp in self.subgroups]),
-                'role': ' role={}'.format(self.role) if self.role else ''
-        }))
-
-    def __mstr__(self):
-        # handle non-g002
-        if not self.is_aarc_g002:
-            return None
-    #
-        return ((
-            'namespace_id:        {namespace_id}' +
-            '\ndelegated_namespace: {delegated_namespace}' +
-            '\nsubnamespaces:       {subnamespaces}' +
-            '\ngroup:               {group}' +
-            '\nsubgroups:           {subgroups}' +
-            '\nrole_in_subgroup     {role}' +
-            '\ngroup_authority:     {group_authority}'
-        ).format(**{
-                'namespace_id': self.namespace_id,
-                'delegated_namespace': self.delegated_namespace,
-                'group': self.group,
-                'group_authority': self.group_authority,
-                'subnamespaces': ','.join(['{}'.format(ns) for ns in self.subnamespaces]),
-                'subgroups': ','.join(['{}'.format(grp) for grp in self.subgroups]),
-                'role':'{}'.format(self.role) if self.role else 'n/a'
-        }))
+        str_str = ' '.join(
+            [
+                '<Aarc_g002_entitlement',
+                'namespace={namespace_id}:{delegated_namespace}{subnamespaces}',
+                'group={group}{subgroups}{role} auth={group_authority}>',
+            ]
+        ).format(
+            namespace_id=self.namespace_id,
+            delegated_namespace = self.delegated_namespace,
+            subnamespaces = ''.join([',{}'.format(ns) for ns in self.subnamespaces]),
+            group = self.group,
+            subgroups = ''.join([',{}'.format(grp) for grp in self.subgroups]),
+            role = 'role={}'.format(self.role) if self.role else '',
+            group_authority = self.group_authority,
+        )
+        return str_str
 
     def __eq__(self, other):
         # pylint: disable=too-many-return-statements
