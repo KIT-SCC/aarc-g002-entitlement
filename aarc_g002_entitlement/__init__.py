@@ -105,32 +105,27 @@ class Aarc_g002_entitlement:
         """Parse a raw EduPerson entitlement string in the AARC-G002 format."""
 
         self._raw = unquote(raw)
+        logger.debug('Processing entitlement: %s', self._raw)
+
         match = ENTITLEMENT_REGEX['strict' if strict else 'lax'].fullmatch(self._raw)
-
         if match is None:
-            logger.info('Entitlement is not AARC-G002 conform (strict=%s): %s', strict, self._raw)
-
-            verbose=0
-            if verbose:
-                logger.info(F"Entitlement in question: {self._raw}")
+            msg = 'Entitlement does not conform to AARC-G002 specification (strict=%s): %s' % (
+                strict, self._raw
+            )
+            logger.info(msg)
 
             if raise_error_if_unparseable:
-                msg = 'Input does not seem to be an AARC-G002 Entitlement'
-                logger.error("raising exception")
-                if strict:
-                    raise ValueError(msg + ' (strict mode)')
-                raise ValueError(msg + ' (lax mode)')
+                logger.error(msg)
+                raise ValueError(msg)
 
-            # no attributes captured for non-g002
-            return None
+            return
 
         capturesdict = match.capturesdict()
-        logger.debug("Extracting entitlement attributes: %s", capturesdict)
+        logger.debug('Extracting entitlement attributes: %s', capturesdict)
         try:
             [self.namespace_id] = capturesdict.get('nid')
             [self.delegated_namespace] = capturesdict.get('delegated_namespace')
             self.subnamespaces = capturesdict.get('subnamespace')
-
             [self.group] = capturesdict.get('group')
             self.subgroups = capturesdict.get('subgroup')
             [self.role] = capturesdict.get('role') or [None]
