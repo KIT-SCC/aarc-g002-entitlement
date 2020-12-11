@@ -16,31 +16,38 @@ try:
 except ImportError:
     from urllib import unquote, quote_plus
 
+
 logger = logging.getLogger(__name__)
 
 # These regexes are not compatible with stdlib 're', we need 'regex'!
 # (because of repeated captures, see https://bugs.python.org/issue7132)
 ENTITLEMENT_REGEX = {
-    'strict':  regex.compile(
-        r'urn:' +
-        r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' + # Namespace-ID & delegated URN namespace
-        r'(:(?P<subnamespace>[^:]+))*?' +                  # Sub-namespaces
-        r':group:' +
-        r'(?P<group>[^:]+)' +                              # Root group
-        r'(:(?P<subgroup>[^:]+))*?' +                      # Sub-groups
-        r'(:role=(?P<role>.+))?' +                         # Role of the user in the deepest group
+    'strict': regex.compile(
+        # NAMESPACE REGEX
+        r'urn:'
+        r'(?P<nid>[^:]+)'                                  # Namespace-ID
+        r':(?P<delegated_namespace>[^:]+)'                 # Delegated URN namespace
+        r'(:(?P<subnamespace>[^:]+))*?'                    # Sub-namespaces
+        # G002 REGEX
+        r':group:'
+        r'(?P<group>[^:]+)'                                # Root group
+        r'(:(?P<subgroup>[^:]+))*?'                        # Sub-groups
+        r'(:role=(?P<role>.+))?'                           # Role of the user in the deepest group
         r'#(?P<group_authority>.+)'                        # Authoritative source of the entitlement
     ),
     'lax': regex.compile(
-        r'urn:' +
-        r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' + # Namespace-ID & delegated URN namespace
-        r'(:(?P<subnamespace>[^:]+))*?' +                  # Sub-namespaces
-        r':group:' +
-        r'(?P<group>[^:#]+)' +                             # Root group
-        r'(:(?P<subgroup>[^:#]+))*?' +                     # Sub-groups
-        r'(:role=(?P<role>[^#]+))?' +                      # Role of the user in the deepest group
+        # NAMESPACE REGEX
+        r'urn:'
+        r'(?P<nid>[^:]+)'                                  # Namespace-ID
+        r':(?P<delegated_namespace>[^:]+)'                 # Delegated URN namespace
+        r'(:(?P<subnamespace>[^:]+))*?'                    # Sub-namespaces
+        # G002 REGEX
+        r':group:'
+        r'(?P<group>[^:#]+)'                               # Root group
+        r'(:(?P<subgroup>[^:#]+))*?'                       # Sub-groups
+        r'(:role=(?P<role>[^#]+))?'                        # Role of the user in the deepest group
         r'(#(?P<group_authority>.+))?'                     # Authoritative source of the entitlement
-    )
+    ),
 }
 
 class Aarc_g002_entitlement:
