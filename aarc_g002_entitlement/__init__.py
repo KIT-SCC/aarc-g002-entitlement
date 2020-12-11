@@ -188,7 +188,6 @@ class Aarc_g002_entitlement:
         return str_str
 
     def __eq__(self, other):
-        # pylint: disable=too-many-return-statements
         """ Check if other object is equal """
 
         # handle non-g002
@@ -197,26 +196,19 @@ class Aarc_g002_entitlement:
                 return self._raw == other._raw
             return False
 
-        if self.namespace_id != other.namespace_id:
-            return False
+        is_equal = (
+            self.namespace_id == other.namespace_id
+            and self.delegated_namespace == other.delegated_namespace
+            and all(
+                subnamespace in other.subnamespaces
+                for subnamespace in self.subnamespaces
+            )
+            and self.group == other.group
+            and self.subgroups == other.subgroups
+            and self.role == other.role
+        )
 
-        if self.delegated_namespace != other.delegated_namespace:
-            return False
-
-        for subnamespace in self.subnamespaces:
-            if subnamespace not in other.subnamespaces:
-                return False
-
-        if self.group != other.group:
-            return False
-
-        if self.subgroups != other.subgroups:
-            return False
-
-        if self.role != other.role:
-            return False
-
-        return True
+        return is_equal
 
     def __le__(self, other):
         # pylint: disable=too-many-return-statements, too-many-branches
