@@ -30,9 +30,9 @@ ENTITLEMENT_REGEX = {
         r'(:(?P<subnamespace>[^:]+))*?'                    # Sub-namespaces
         # G002 REGEX
         r':group:'
-        r'(?P<group>[^:]+)'                                # Root group
-        r'(:(?P<subgroup>[^:]+))*?'                        # Sub-groups
-        r'(:role=(?P<role>.+))?'                           # Role of the user in the deepest group
+        r'(?P<group>[^:#]+)'                               # Root group
+        r'(:(?P<subgroup>[^:#]+))*?'                       # Sub-groups
+        r'(:role=(?P<role>[^#]+))?'                        # Role of the user in the deepest group
         r'#(?P<group_authority>.+)'                        # Authoritative source of the entitlement
     ),
     'lax': regex.compile(
@@ -224,9 +224,9 @@ class Aarc_g002_entitlement:
             return False
 
         try:
-            myown_subgroup_for_role = self.subgroups[-1]
+            self_subgroup_for_role = self.subgroups[-1]
         except IndexError:
-            myown_subgroup_for_role = None
+            self_subgroup_for_role = None
 
         try:
             other_subgroup_for_role = other.subgroups[-1]
@@ -246,12 +246,10 @@ class Aarc_g002_entitlement:
                     subgroup in other.subgroups
                     for subgroup in self.subgroups
                 )
-                if other.subgroups
-                else True
             )
             and (
                 self.role == other.role
-                and myown_subgroup_for_role == other_subgroup_for_role
+                and self_subgroup_for_role == other_subgroup_for_role
                 if self.role
                 else True
             )
