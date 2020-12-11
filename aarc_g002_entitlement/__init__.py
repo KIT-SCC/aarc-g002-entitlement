@@ -145,20 +145,23 @@ class Aarc_g002_entitlement:
         if not self.is_aarc_g002:
             return self._raw
 
-        return ((
-            'urn:{namespace_id}:{delegated_namespace}{subnamespaces}' +
+        repr_str = (
+            # NAMESPACE part
+            'urn:{namespace_id}:{delegated_namespace}{subnamespaces}'
+            # G002 part
             ':group:{group}{subgroups}{role}{group_authority}'
-        ).format(**{
-                'namespace_id': self.namespace_id,
-                'delegated_namespace': self.delegated_namespace,
-                'group': self.group,
-                'group_authority': (
-                    '#{}'.format(self.group_authority) if self.group_authority else ''
-                ),
-                'subnamespaces': ''.join([':{}'.format(ns) for ns in self.subnamespaces]),
-                'subgroups': ''.join([':{}'.format(grp) for grp in self.subgroups]),
-                'role': ':role={}'.format(self.role) if self.role else ''
-        }))
+        ).format(
+            # NAMESPACE part
+            namespace_id=self.namespace_id,
+            delegated_namespace=self.delegated_namespace,
+            subnamespaces=''.join([':{}'.format(ns) for ns in self.subnamespaces]),
+            # G002 part
+            group=self.group,
+            subgroups=''.join([':{}'.format(grp) for grp in self.subgroups]),
+            role=':role={}'.format(self.role) if self.role else '',
+            group_authority='#{}'.format(self.group_authority) if self.group_authority else '',
+        )
+        return repr_str
 
     def __str__(self):
         """Return the entitlement in human-readable string form."""
