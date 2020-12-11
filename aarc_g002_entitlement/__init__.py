@@ -265,12 +265,14 @@ class Aarc_g002_entitlement:
 
     @property
     def is_aarc_g002(self):
-        """ Check if this entitlements follows the AARC-G002 recommendation
+        """
+        Check if this entitlements follows the AARC-G002 recommendation
+
         Note this only works with raise_error_if_unparseable=False
 
         :return: True if the recommendation is followed
         :rtype: bool
         """
-        return self.group != ''
+        return bool(self.group)
 
 # TODO: Add more Weird combinations of these with roles
