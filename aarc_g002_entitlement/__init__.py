@@ -211,9 +211,11 @@ class Aarc_g002_entitlement:
         return is_equal
 
     def __le__(self, other):
-        # pylint: disable=too-many-return-statements, too-many-branches
-        """ Check if self is contained in other.
-        Please use "is_contained_in", see below"""
+        """
+        Check if self is contained in other.
+
+        Please, use "is_contained_in", see below.
+        """
 
         # handle non-g002
         if not self.is_aarc_g002:
@@ -221,46 +223,41 @@ class Aarc_g002_entitlement:
                 return self._raw == other._raw
             return False
 
-        if self.namespace_id != other.namespace_id:
-            return False
+        try:
+            myown_subgroup_for_role = self.subgroups[-1]
+        except IndexError:
+            myown_subgroup_for_role = None
 
-        if self.delegated_namespace != other.delegated_namespace:
-            return False
+        try:
+            other_subgroup_for_role = other.subgroups[-1]
+        except IndexError:
+            other_subgroup_for_role = None
 
-        for subnamespace in self.subnamespaces:
-            if subnamespace not in other.subnamespaces:
-                return False
+        is_le = (
+            self.namespace_id == other.namespace_id
+            and self.delegated_namespace == other.delegated_namespace
+            and all(
+                subnamespace in other.subnamespaces
+                for subnamespace in self.subnamespaces
+            )
+            and self.group == other.group
+            and (
+                all(
+                    subgroup in other.subgroups
+                    for subgroup in self.subgroups
+                )
+                if other.subgroups
+                else True
+            )
+            and (
+                self.role == other.role
+                and myown_subgroup_for_role == other_subgroup_for_role
+                if self.role
+                else True
+            )
+        )
 
-        if self.group != other.group:
-            return False
-
-        if other.subgroups:
-            logger.debug("Checking subgroups")
-
-            for subgroup in self.subgroups:
-                logger.debug(F"is {other.subgroups} in {subgroup}  ??")
-                if subgroup not in other.subgroups:
-                    logger.debug("    => No")
-                    return False
-                logger.debug("    => Yes")
-
-        if self.role is not None:
-            logger.debug ("Checking role")
-            if self.role != other.role:
-                return False
-
-            try:
-                myown_subgroup_for_role = self.subgroups[-1]
-            except IndexError:
-                myown_subgroup_for_role = None
-            try:
-                other_subgroup_for_role = other.subgroups[-1]
-            except IndexError:
-                other_subgroup_for_role = None
-
-            if myown_subgroup_for_role != other_subgroup_for_role:
-                return False
-        return True
+        return is_le
 
     def is_contained_in(self, other):
         """ Check if self is contained in other """
