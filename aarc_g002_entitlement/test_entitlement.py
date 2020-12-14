@@ -1,7 +1,11 @@
 # pylint: disable=invalid-name, missing-docstring, no-self-use
 
 import pytest
+
 from aarc_g002_entitlement import Aarc_g002_entitlement
+from aarc_g002_entitlement import Aarc_g002_entitlement_Error
+from aarc_g002_entitlement import Aarc_g002_entitlement_ParseError
+
 
 class TestAarc_g002_entitlement:
     def test_equality(self):
@@ -96,5 +100,5 @@ class TestAarc_g002_entitlement:
 
     def test_failure_incomplete_invalid_entitlement(self):
         required_group = "urn:geant:h-df.de"
-        with pytest.raises(ValueError):
+        with pytest.raises(Aarc_g002_entitlement_ParseError):
             Aarc_g002_entitlement(required_group, raise_error_if_unparseable=True)
