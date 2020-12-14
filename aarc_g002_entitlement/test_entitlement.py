@@ -19,6 +19,27 @@ class TestAarc_g002_entitlement:
         act_entitlement = Aarc_g002_entitlement(actual_group)
         assert req_entitlement.is_contained_in(act_entitlement)
 
+    def test_group(self):
+        required_group = "urn:geant:h-df.de:group:aai-admin"
+        actual_group   = "urn:geant:h-df.de:group:aai-admin#backupserver.used.for.developmt.de"
+        req_entitlement = Aarc_g002_entitlement(required_group, strict=False)
+        act_entitlement = Aarc_g002_entitlement(actual_group, strict=False)
+        assert req_entitlement.is_contained_in(act_entitlement)
+
+    def test_intentional_authority_mismatch(self):
+        required_group = "urn:geant:h-df.de:group:aai-admin#authority_a"
+        actual_group   = "urn:geant:h-df.de:group:aai-admin#totally_different_authority"
+        req_entitlement = Aarc_g002_entitlement(required_group, strict=False)
+        act_entitlement = Aarc_g002_entitlement(actual_group, strict=False)
+        assert req_entitlement.is_contained_in(act_entitlement)
+
+    def test_intentional_authority_mismatch_2(self):
+        required_group = "urn:geant:h-df.de:group:aai-admin"
+        actual_group   = "urn:geant:h-df.de:group:aai-admin#totally_different_authority"
+        req_entitlement = Aarc_g002_entitlement(required_group, strict=False)
+        act_entitlement = Aarc_g002_entitlement(actual_group, strict=False)
+        assert req_entitlement.is_contained_in(act_entitlement)
+
     def test_role_not_required(self):
         required_group = "urn:geant:h-df.de:group:aai-admin#unity.helmholtz-data-federation.de"
         actual_group   = "urn:geant:h-df.de:group:aai-admin:role=member#backupserver.used.for.developmt.de"
@@ -35,12 +56,17 @@ class TestAarc_g002_entitlement:
 
     def test_subgroup_required(self):
         required_group = "urn:geant:h-df.de:group:aai-admin:special-admins#unity.helmholtz-data-federation.de"
-        actual_group = (
-            "urn:geant:h-df.de:group:aai-admin#backupserver.used.for.developmt.de"
-        )
+        actual_group   = ("urn:geant:h-df.de:group:aai-admin#backupserver.used.for.developmt.de")
         req_entitlement = Aarc_g002_entitlement(required_group)
         act_entitlement = Aarc_g002_entitlement(actual_group)
         assert not req_entitlement.is_contained_in(act_entitlement)
+
+    def test_subgroup_required_and_available(self):
+        required_group = "urn:geant:h-df.de:group:m-team:feudal-developers"
+        actual_group   = "urn:geant:h-df.de:group:m-team:feudal-developers#login.helmholtz.de"
+        req_entitlement = Aarc_g002_entitlement(required_group, strict=False)
+        act_entitlement = Aarc_g002_entitlement(actual_group, strict=False)
+        assert req_entitlement.is_contained_in(act_entitlement)
 
     def test_user_in_subgroup(self):
         required_group = "urn:geant:h-df.de:group:aai-admin"
