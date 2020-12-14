@@ -243,10 +243,7 @@ class Aarc_g002_entitlement:
         is_equal = (
             self.namespace_id == other.namespace_id
             and self.delegated_namespace == other.delegated_namespace
-            and all(
-                subnamespace in other.subnamespaces
-                for subnamespace in self.subnamespaces
-            )
+            and self.subnamespaces == other.subnamespaces
             and self.group == other.group
             and self.subgroups == other.subgroups
             and self.role == other.role
@@ -277,19 +274,19 @@ class Aarc_g002_entitlement:
         except IndexError:
             other_subgroup_for_role = None
 
+        other_subns_len = len(other.subnamespaces)
+        other_subgroups_len = len(other.subgroups)
         is_le = (
             self.namespace_id == other.namespace_id
             and self.delegated_namespace == other.delegated_namespace
             and all(
-                subnamespace in other.subnamespaces
-                for subnamespace in self.subnamespaces
+                other_subns_len > idx and subns == other.subnamespaces[idx]
+                for idx, subns in enumerate(self.subnamespaces)
             )
             and self.group == other.group
-            and (
-                all(
-                    subgroup in other.subgroups
-                    for subgroup in self.subgroups
-                )
+            and all(
+                other_subgroups_len > idx and subgroup == other.subgroups[idx]
+                for idx, subgroup in enumerate(self.subgroups)
             )
             and (
                 self.role == other.role
