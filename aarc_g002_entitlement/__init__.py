@@ -231,8 +231,22 @@ class Aarc_g002_entitlement:
             )
         return str_str
 
+    def __hash__(self):
+        keys = (
+            self.namespace_id,
+            self.delegated_namespace,
+            tuple(self.subnamespaces),
+            self.group,
+            tuple(self.subgroups),
+            self.role,
+        )
+        hash_id = hash(keys)
+        return hash_id
+
     def __eq__(self, other):
-        """ Check if other object is equal """
+        """
+        Check if other object is equal.
+        """
 
         # handle non-g002
         if not self.is_aarc_g002:
@@ -240,18 +254,7 @@ class Aarc_g002_entitlement:
                 return self._raw == other._raw
             return False
 
-        is_equal = (
-            self.namespace_id == other.namespace_id
-            and self.delegated_namespace == other.delegated_namespace
-            and all(
-                subnamespace in other.subnamespaces
-                for subnamespace in self.subnamespaces
-            )
-            and self.group == other.group
-            and self.subgroups == other.subgroups
-            and self.role == other.role
-        )
-
+        is_equal = hash(self) == hash(other)
         return is_equal
 
     def __le__(self, other):
