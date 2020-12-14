@@ -57,6 +57,15 @@ ENTITLEMENT_REGEX = {
     ),
 }
 
+
+class Aarc_g002_entitlement_Error(Exception):
+    """A generic error for this module"""
+
+
+class Aarc_g002_entitlement_ParseError(Aarc_g002_entitlement_Error):
+    """Error during parsing an entitlement"""
+
+
 class Aarc_g002_entitlement:
     """
     Parse and compare EduPerson Entitlements
@@ -76,18 +85,20 @@ class Aarc_g002_entitlement:
     to `True`.
     :type strict: bool, optional
 
-    :param raise_error_if_unparseable: `True` to raise a ValueError, if the entitlements does
-    not follow the AARC-G002 recommendation and `False` to create the (largely empty) entitlement
-    object, defaults to `False`.
+    :param raise_error_if_unparseable:
+        `True` to raise a Aarc_g002_entitlement_ParseError,
+        if the entitlements does not follow the AARC-G002 recommendation.
+        `False` to create the (largely empty) entitlement object.
+        Defaults to `False`.
     :type raise_error_if_unparseable: bool, optional
 
-    :raises ValueError:
-        If raw does not contain a group_authority and strict is `True`,
-        or if the raw entitlement is not following the AARC-G002 recommendation at all and
-        `raise_error_if_unparseable is `True`.
+    :raises Aarc_g002_entitlement_ParseError:
+        If the raw entitlement is not following the AARC-G002 recommendation
+        and `strict` mode is `True`
+        and `raise_error_if_unparseable` is `True`.
 
-    :raises Exception: If the attributes extracted from the entitlement could not be assigned
-    to this instance.
+    :raises Aarc_g002_entitlement_Error:
+        If the attributes extracted from the entitlement could not be assigned to this instance.
 
     Available attributes for AARC-G002 entitlements are listed here.
     For entitlements not following the recommendation, these are set to their default values.
@@ -123,7 +134,7 @@ class Aarc_g002_entitlement:
 
             if raise_error_if_unparseable:
                 logger.error(msg)
-                raise ValueError(msg)
+                raise Aarc_g002_entitlement_ParseError(msg)
 
             return
 
@@ -139,7 +150,7 @@ class Aarc_g002_entitlement:
             [self.group_authority] = capturesdict.get('group_authority') or [None]
         except ValueError as e:
             logger.error('On assigning the captured attributes: %s', e)
-            raise Exception('Error extracting captured attributes') from e
+            raise Aarc_g002_entitlement_Error('Error extracting captured attributes') from e
 
     def __repr__(self):
         """Serialize the entitlement to the AARC-G002 format.
