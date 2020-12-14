@@ -1,5 +1,8 @@
-'''Check entitlements according to the AARC G002 recommendation
-   https://aarc-project.eu/guidelines/aarc-g002'''
+'''
+Check entitlements according to the AARC G002 recommendation
+
+https://aarc-project.eu/guidelines/aarc-g002
+'''
 # This code is distributed under the MIT License
 # pylint
 # vim: tw=100 foldmethod=indent
@@ -13,36 +16,45 @@ try:
 except ImportError:
     from urllib import unquote, quote_plus
 
+
 logger = logging.getLogger(__name__)
 
 # These regexes are not compatible with stdlib 're', we need 'regex'!
 # (because of repeated captures, see https://bugs.python.org/issue7132)
 ENTITLEMENT_REGEX = {
-    'strict':  regex.compile(
-        r'urn:' +
-        r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' + # Namespace-ID & delegated URN namespace
-        r'(:(?P<subnamespace>[^:]+))*?' +                  # Sub-namespaces
-        r':group:' +
-        r'(?P<group>[^:]+)' +                              # Root group
-        r'(:(?P<subgroup>[^:]+))*?' +                      # Sub-groups
-        r'(:role=(?P<role>.+))?' +                         # Role of the user in the deepest group
+    'strict': regex.compile(
+        # NAMESPACE REGEX
+        r'urn:'
+        r'(?P<nid>[^:]+)'                                  # Namespace-ID
+        r':(?P<delegated_namespace>[^:]+)'                 # Delegated URN namespace
+        r'(:(?P<subnamespace>[^:]+))*?'                    # Sub-namespaces
+        # G002 REGEX
+        r':group:'
+        r'(?P<group>[^:]+)'                                # Root group
+        r'(:(?P<subgroup>[^:]+))*?'                        # Sub-groups
+        r'(:role=(?P<role>.+))?'                           # Role of the user in the deepest group
         r'#(?P<group_authority>.+)'                        # Authoritative source of the entitlement
     ),
     'lax': regex.compile(
-        r'urn:' +
-        r'(?P<nid>[^:]+):(?P<delegated_namespace>[^:]+)' + # Namespace-ID & delegated URN namespace
-        r'(:(?P<subnamespace>[^:]+))*?' +                  # Sub-namespaces
-        r':group:' +
-        r'(?P<group>[^:#]+)' +                             # Root group
-        r'(:(?P<subgroup>[^:#]+))*?' +                     # Sub-groups
-        r'(:role=(?P<role>[^#]+))?' +                      # Role of the user in the deepest group
+        # NAMESPACE REGEX
+        r'urn:'
+        r'(?P<nid>[^:]+)'                                  # Namespace-ID
+        r':(?P<delegated_namespace>[^:]+)'                 # Delegated URN namespace
+        r'(:(?P<subnamespace>[^:]+))*?'                    # Sub-namespaces
+        # G002 REGEX
+        r':group:'
+        r'(?P<group>[^:#]+)'                               # Root group
+        r'(:(?P<subgroup>[^:#]+))*?'                       # Sub-groups
+        r'(:role=(?P<role>[^#]+))?'                        # Role of the user in the deepest group
         r'(#(?P<group_authority>.+))?'                     # Authoritative source of the entitlement
-    )
+    ),
 }
 
 class Aarc_g002_entitlement:
-    """Entitlement allows EduPerson Entitlement parsing and comparision,
-    as specified in https://aarc-project.eu/guidelines/aarc-g002.
+    """
+    Parse and compare EduPerson Entitlements
+
+    Reference specification: https://aarc-project.eu/guidelines/aarc-g002
 
     Class instances can be tested for equality and less-than-or-equality.
     The py:meth:is_contained_in can be used to checks if a user with an entitlement `U`
@@ -58,7 +70,7 @@ class Aarc_g002_entitlement:
     :type strict: bool, optional
 
     :param raise_error_if_unparseable: `True` to raise a ValueError, if the entitlements does
-    not follow the AARC-G002 recommendation and `True` to create the (largely empty) entitlement
+    not follow the AARC-G002 recommendation and `False` to create the (largely empty) entitlement
     object, defaults to `False`.
     :type raise_error_if_unparseable: bool, optional
 
@@ -93,32 +105,27 @@ class Aarc_g002_entitlement:
         """Parse a raw EduPerson entitlement string in the AARC-G002 format."""
 
         self._raw = unquote(raw)
+        logger.debug('Processing entitlement: %s', self._raw)
+
         match = ENTITLEMENT_REGEX['strict' if strict else 'lax'].fullmatch(self._raw)
-
         if match is None:
-            logger.info('Entitlement is not AARC-G002 conform (strict=%s): %s', strict, self._raw)
-
-            verbose=0
-            if verbose:
-                logger.info(F"Entitlement in question: {self._raw}")
+            msg = 'Entitlement does not conform to AARC-G002 specification (strict=%s): %s' % (
+                strict, self._raw
+            )
+            logger.info(msg)
 
             if raise_error_if_unparseable:
-                msg = 'Input does not seem to be an AARC-G002 Entitlement'
-                logger.error("raising exception")
-                if strict:
-                    raise ValueError(msg + ' (strict mode)')
-                raise ValueError(msg + ' (lax mode)')
+                logger.error(msg)
+                raise ValueError(msg)
 
-            # no attributes captured for non-g002
-            return None
+            return
 
         capturesdict = match.capturesdict()
-        logger.debug("Extracting entitlement attributes: %s", capturesdict)
+        logger.debug('Extracting entitlement attributes: %s', capturesdict)
         try:
             [self.namespace_id] = capturesdict.get('nid')
             [self.delegated_namespace] = capturesdict.get('delegated_namespace')
             self.subnamespaces = capturesdict.get('subnamespace')
-
             [self.group] = capturesdict.get('group')
             self.subgroups = capturesdict.get('subgroup')
             [self.role] = capturesdict.get('role') or [None]
@@ -138,20 +145,23 @@ class Aarc_g002_entitlement:
         if not self.is_aarc_g002:
             return self._raw
 
-        return ((
-            'urn:{namespace_id}:{delegated_namespace}{subnamespaces}' +
+        repr_str = (
+            # NAMESPACE part
+            'urn:{namespace_id}:{delegated_namespace}{subnamespaces}'
+            # G002 part
             ':group:{group}{subgroups}{role}{group_authority}'
-        ).format(**{
-                'namespace_id': self.namespace_id,
-                'delegated_namespace': self.delegated_namespace,
-                'group': self.group,
-                'group_authority': (
-                    '#{}'.format(self.group_authority) if self.group_authority else ''
-                ),
-                'subnamespaces': ''.join([':{}'.format(ns) for ns in self.subnamespaces]),
-                'subgroups': ''.join([':{}'.format(grp) for grp in self.subgroups]),
-                'role': ':role={}'.format(self.role) if self.role else ''
-        }))
+        ).format(
+            # NAMESPACE part
+            namespace_id=self.namespace_id,
+            delegated_namespace=self.delegated_namespace,
+            subnamespaces=''.join([':{}'.format(ns) for ns in self.subnamespaces]),
+            # G002 part
+            group=self.group,
+            subgroups=''.join([':{}'.format(grp) for grp in self.subgroups]),
+            role=':role={}'.format(self.role) if self.role else '',
+            group_authority='#{}'.format(self.group_authority) if self.group_authority else '',
+        )
+        return repr_str
 
     def __str__(self):
         """Return the entitlement in human-readable string form."""
@@ -160,47 +170,24 @@ class Aarc_g002_entitlement:
         if not self.is_aarc_g002:
             return self._raw
 
-        return ((
-            '<Aarc_g002_entitlement' +
-            ' namespace={namespace_id}:{delegated_namespace}{subnamespaces}' +
-            ' group={group}{subgroups}' +
-            '{role}' +
-            ' auth={group_authority}>'
-        ).format(**{
-                'namespace_id': self.namespace_id,
-                'delegated_namespace': self.delegated_namespace,
-                'group': self.group,
-                'group_authority': self.group_authority,
-                'subnamespaces': ''.join([',{}'.format(ns) for ns in self.subnamespaces]),
-                'subgroups': ''.join([',{}'.format(grp) for grp in self.subgroups]),
-                'role': ' role={}'.format(self.role) if self.role else ''
-        }))
-
-    def __mstr__(self):
-        # handle non-g002
-        if not self.is_aarc_g002:
-            return None
-    #
-        return ((
-            'namespace_id:        {namespace_id}' +
-            '\ndelegated_namespace: {delegated_namespace}' +
-            '\nsubnamespaces:       {subnamespaces}' +
-            '\ngroup:               {group}' +
-            '\nsubgroups:           {subgroups}' +
-            '\nrole_in_subgroup     {role}' +
-            '\ngroup_authority:     {group_authority}'
-        ).format(**{
-                'namespace_id': self.namespace_id,
-                'delegated_namespace': self.delegated_namespace,
-                'group': self.group,
-                'group_authority': self.group_authority,
-                'subnamespaces': ','.join(['{}'.format(ns) for ns in self.subnamespaces]),
-                'subgroups': ','.join(['{}'.format(grp) for grp in self.subgroups]),
-                'role':'{}'.format(self.role) if self.role else 'n/a'
-        }))
+        str_str = ' '.join(
+            [
+                '<Aarc_g002_entitlement',
+                'namespace={namespace_id}:{delegated_namespace}{subnamespaces}',
+                'group={group}{subgroups}{role} auth={group_authority}>',
+            ]
+        ).format(
+            namespace_id=self.namespace_id,
+            delegated_namespace = self.delegated_namespace,
+            subnamespaces = ''.join([',{}'.format(ns) for ns in self.subnamespaces]),
+            group = self.group,
+            subgroups = ''.join([',{}'.format(grp) for grp in self.subgroups]),
+            role = 'role={}'.format(self.role) if self.role else '',
+            group_authority = self.group_authority,
+        )
+        return str_str
 
     def __eq__(self, other):
-        # pylint: disable=too-many-return-statements
         """ Check if other object is equal """
 
         # handle non-g002
@@ -209,31 +196,26 @@ class Aarc_g002_entitlement:
                 return self._raw == other._raw
             return False
 
-        if self.namespace_id != other.namespace_id:
-            return False
+        is_equal = (
+            self.namespace_id == other.namespace_id
+            and self.delegated_namespace == other.delegated_namespace
+            and all(
+                subnamespace in other.subnamespaces
+                for subnamespace in self.subnamespaces
+            )
+            and self.group == other.group
+            and self.subgroups == other.subgroups
+            and self.role == other.role
+        )
 
-        if self.delegated_namespace != other.delegated_namespace:
-            return False
-
-        for subnamespace in self.subnamespaces:
-            if subnamespace not in other.subnamespaces:
-                return False
-
-        if self.group != other.group:
-            return False
-
-        if self.subgroups != other.subgroups:
-            return False
-
-        if self.role != other.role:
-            return False
-
-        return True
+        return is_equal
 
     def __le__(self, other):
-        # pylint: disable=too-many-return-statements, too-many-branches
-        """ Check if self is contained in other.
-        Please use "is_contained_in", see below"""
+        """
+        Check if self is contained in other.
+
+        Please, use "is_contained_in", see below.
+        """
 
         # handle non-g002
         if not self.is_aarc_g002:
@@ -241,46 +223,41 @@ class Aarc_g002_entitlement:
                 return self._raw == other._raw
             return False
 
-        if self.namespace_id != other.namespace_id:
-            return False
+        try:
+            myown_subgroup_for_role = self.subgroups[-1]
+        except IndexError:
+            myown_subgroup_for_role = None
 
-        if self.delegated_namespace != other.delegated_namespace:
-            return False
+        try:
+            other_subgroup_for_role = other.subgroups[-1]
+        except IndexError:
+            other_subgroup_for_role = None
 
-        for subnamespace in self.subnamespaces:
-            if subnamespace not in other.subnamespaces:
-                return False
+        is_le = (
+            self.namespace_id == other.namespace_id
+            and self.delegated_namespace == other.delegated_namespace
+            and all(
+                subnamespace in other.subnamespaces
+                for subnamespace in self.subnamespaces
+            )
+            and self.group == other.group
+            and (
+                all(
+                    subgroup in other.subgroups
+                    for subgroup in self.subgroups
+                )
+                if other.subgroups
+                else True
+            )
+            and (
+                self.role == other.role
+                and myown_subgroup_for_role == other_subgroup_for_role
+                if self.role
+                else True
+            )
+        )
 
-        if self.group != other.group:
-            return False
-
-        if other.subgroups:
-            logger.debug("Checking subgroups")
-
-            for subgroup in self.subgroups:
-                logger.debug(F"is {other.subgroups} in {subgroup}  ??")
-                if subgroup not in other.subgroups:
-                    logger.debug("    => No")
-                    return False
-                logger.debug("    => Yes")
-
-        if self.role is not None:
-            logger.debug ("Checking role")
-            if self.role != other.role:
-                return False
-
-            try:
-                myown_subgroup_for_role = self.subgroups[-1]
-            except IndexError:
-                myown_subgroup_for_role = None
-            try:
-                other_subgroup_for_role = other.subgroups[-1]
-            except IndexError:
-                other_subgroup_for_role = None
-
-            if myown_subgroup_for_role != other_subgroup_for_role:
-                return False
-        return True
+        return is_le
 
     def is_contained_in(self, other):
         """ Check if self is contained in other """
@@ -288,12 +265,14 @@ class Aarc_g002_entitlement:
 
     @property
     def is_aarc_g002(self):
-        """ Check if this entitlements follows the AARC-G002 recommendation
+        """
+        Check if this entitlements follows the AARC-G002 recommendation
+
         Note this only works with raise_error_if_unparseable=False
 
         :return: True if the recommendation is followed
         :rtype: bool
         """
-        return self.group != ''
+        return bool(self.group)
 
 # TODO: Add more Weird combinations of these with roles
