@@ -19,34 +19,41 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+NAMESPACE_REGEX = (
+    r'urn'
+    r':(?P<nid>[^:]+)'                                 # Namespace-ID
+    r':(?P<delegated_namespace>[^:]+)'                 # Delegated URN namespace
+    r'(:(?P<subnamespace>[^:]+))*?'                    # Sub-namespaces
+)
+G002_GROUP_SUBGROUP_ROLE_REGEX = (
+    r':group:'
+    r'(?P<group>[^:#]+)'                               # Root group
+    r'(:(?P<subgroup>[^:#]+))*?'                       # Sub-groups
+    r'(:role=(?P<role>[^#]+))?'                        # Role of the user in the deepest group
+)
+G002_STRICT_AUTH_REGEX = (
+    r'#(?P<group_authority>.+)'                        # Authoritative source of the entitlement
+)
+G002_LAX_AUTH_REGEX = (
+    r'(#(?P<group_authority>.+))?'                     # Authoritative source of the entitlement
+)
+
 # These regexes are not compatible with stdlib 're', we need 'regex'!
 # (because of repeated captures, see https://bugs.python.org/issue7132)
 ENTITLEMENT_REGEX = {
     'strict': regex.compile(
-        # NAMESPACE REGEX
-        r'urn:'
-        r'(?P<nid>[^:]+)'                                  # Namespace-ID
-        r':(?P<delegated_namespace>[^:]+)'                 # Delegated URN namespace
-        r'(:(?P<subnamespace>[^:]+))*?'                    # Sub-namespaces
-        # G002 REGEX
-        r':group:'
-        r'(?P<group>[^:]+)'                                # Root group
-        r'(:(?P<subgroup>[^:]+))*?'                        # Sub-groups
-        r'(:role=(?P<role>.+))?'                           # Role of the user in the deepest group
-        r'#(?P<group_authority>.+)'                        # Authoritative source of the entitlement
+        r'^'
+        + NAMESPACE_REGEX
+        + G002_GROUP_SUBGROUP_ROLE_REGEX
+        + G002_STRICT_AUTH_REGEX
+        + r'$'
     ),
     'lax': regex.compile(
-        # NAMESPACE REGEX
-        r'urn:'
-        r'(?P<nid>[^:]+)'                                  # Namespace-ID
-        r':(?P<delegated_namespace>[^:]+)'                 # Delegated URN namespace
-        r'(:(?P<subnamespace>[^:]+))*?'                    # Sub-namespaces
-        # G002 REGEX
-        r':group:'
-        r'(?P<group>[^:#]+)'                               # Root group
-        r'(:(?P<subgroup>[^:#]+))*?'                       # Sub-groups
-        r'(:role=(?P<role>[^#]+))?'                        # Role of the user in the deepest group
-        r'(#(?P<group_authority>.+))?'                     # Authoritative source of the entitlement
+        r'^'
+        + NAMESPACE_REGEX
+        + G002_GROUP_SUBGROUP_ROLE_REGEX
+        + G002_LAX_AUTH_REGEX
+        + r'$'
     ),
 }
 
@@ -250,9 +257,9 @@ class Aarc_g002_entitlement:
             return False
 
         try:
-            myown_subgroup_for_role = self.subgroups[-1]
+            self_subgroup_for_role = self.subgroups[-1]
         except IndexError:
-            myown_subgroup_for_role = None
+            self_subgroup_for_role = None
 
         try:
             other_subgroup_for_role = other.subgroups[-1]
@@ -272,12 +279,10 @@ class Aarc_g002_entitlement:
                     subgroup in other.subgroups
                     for subgroup in self.subgroups
                 )
-                if other.subgroups
-                else True
             )
             and (
                 self.role == other.role
-                and myown_subgroup_for_role == other_subgroup_for_role
+                and self_subgroup_for_role == other_subgroup_for_role
                 if self.role
                 else True
             )
