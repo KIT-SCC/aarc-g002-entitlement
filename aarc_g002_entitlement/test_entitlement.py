@@ -9,12 +9,44 @@ from aarc_g002_entitlement import Aarc_g002_entitlement_ParseError
 
 class TestAarc_g002_entitlement:
     def test_equality(self):
-        required_group = "urn:geant:h-df.de:group:aai-admin:role = member#unity.helmholtz-data-federation.de"
-        actual_group   = "urn:geant:h-df.de:group:aai-admin:role = member#unity.helmholtz-data-federation.de"
+        required_group = "urn:geant:h-df.de:group:aai-admin:role=member#unity.helmholtz-data-federation.de"
+        actual_group   = "urn:geant:h-df.de:group:aai-admin:role=member#unity.helmholtz-data-federation.de"
         req_entitlement = Aarc_g002_entitlement(required_group)
         act_entitlement = Aarc_g002_entitlement(actual_group)
         assert act_entitlement == req_entitlement
         assert req_entitlement.is_contained_in(act_entitlement)
+
+    def test_order_of_subnamespaces_equality(self):
+        required_group = "urn:geant:h-df.de:subns1:subns2:group:aai-admin:role=member#unity.helmholtz-data-federation.de"
+        actual_group   = "urn:geant:h-df.de:subns2:subns1:group:aai-admin:role=member#unity.helmholtz-data-federation.de"
+        req_entitlement = Aarc_g002_entitlement(required_group)
+        act_entitlement = Aarc_g002_entitlement(actual_group)
+        assert act_entitlement != req_entitlement
+        assert not req_entitlement.is_contained_in(act_entitlement)
+
+    def test_order_of_subgroups_equality(self):
+        required_group = "urn:geant:h-df.de:group:aai-admin:subgroup1:subgroup2:subgroup3:role=member#unity.helmholtz-data-federation.de"
+        actual_group   = "urn:geant:h-df.de:group:aai-admin:subgroup2:subgroup1:subgroup3:role=member#unity.helmholtz-data-federation.de"
+        req_entitlement = Aarc_g002_entitlement(required_group)
+        act_entitlement = Aarc_g002_entitlement(actual_group)
+        assert act_entitlement != req_entitlement
+        assert not req_entitlement.is_contained_in(act_entitlement)
+
+    def test_order_of_subnamespaces_out_of_bounds_equality(self):
+        required_group = "urn:geant:h-df.de:subns1:subns2:subns0:group:aai-admin:role=member#unity.helmholtz-data-federation.de"
+        actual_group   = "urn:geant:h-df.de:subns1:subns2:group:aai-admin:role=member#unity.helmholtz-data-federation.de"
+        req_entitlement = Aarc_g002_entitlement(required_group)
+        act_entitlement = Aarc_g002_entitlement(actual_group)
+        assert act_entitlement != req_entitlement
+        assert not req_entitlement.is_contained_in(act_entitlement)
+
+    def test_order_of_subgroups_out_of_bounds_equality(self):
+        required_group = "urn:geant:h-df.de:group:aai-admin:subgroup1:subgroup2:subgroup3:role=member#unity.helmholtz-data-federation.de"
+        actual_group   = "urn:geant:h-df.de:group:aai-admin:subgroup1:subgroup2:role=member#unity.helmholtz-data-federation.de"
+        req_entitlement = Aarc_g002_entitlement(required_group)
+        act_entitlement = Aarc_g002_entitlement(actual_group)
+        assert act_entitlement != req_entitlement
+        assert not req_entitlement.is_contained_in(act_entitlement)
 
     def test_simple(self):
         required_group = "urn:geant:h-df.de:group:aai-admin:role=member#unity.helmholtz-data-federation.de"
