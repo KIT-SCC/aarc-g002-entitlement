@@ -85,17 +85,9 @@ class Aarc_g002_entitlement:
     to `True`.
     :type strict: bool, optional
 
-    :param raise_error_if_unparseable:
-        `True` to raise a Aarc_g002_entitlement_ParseError,
-        if the entitlements does not follow the AARC-G002 recommendation.
-        `False` to create the (largely empty) entitlement object.
-        Defaults to `False`.
-    :type raise_error_if_unparseable: bool, optional
-
     :raises Aarc_g002_entitlement_ParseError:
         If the raw entitlement is not following the AARC-G002 recommendation
-        and `strict` mode is `True`
-        and `raise_error_if_unparseable` is `True`.
+        and cannnot be parsed.
 
     :raises Aarc_g002_entitlement_Error:
         If the attributes extracted from the entitlement could not be assigned to this instance.
@@ -119,8 +111,12 @@ class Aarc_g002_entitlement:
     #: None if the entitlement has no group_authority.
     group_authority = None
 
-    def __init__(self, raw, strict=True, raise_error_if_unparseable=False):
+    def __init__(self, raw, strict=True, **kwargs):
         """Parse a raw EduPerson entitlement string in the AARC-G002 format."""
+
+        if "raise_error_if_unparseable" in kwargs:
+            msg = "raise_error_if_unparseable is deprecated; it is now always True."
+            logger.warning(msg)
 
         self._raw = unquote(raw)
         logger.debug('Processing entitlement: %s', self._raw)
@@ -130,13 +126,7 @@ class Aarc_g002_entitlement:
             msg = 'Entitlement does not conform to AARC-G002 specification (strict=%s): %s' % (
                 strict, self._raw
             )
-            logger.info(msg)
-
-            if raise_error_if_unparseable:
-                logger.error(msg)
-                raise Aarc_g002_entitlement_ParseError(msg)
-
-            return
+            raise Aarc_g002_entitlement_ParseError(msg)
 
         capturesdict = match.capturesdict()
         logger.debug('Extracting entitlement attributes: %s', capturesdict)
@@ -159,10 +149,6 @@ class Aarc_g002_entitlement:
         holds for any valid entitlement.
         """
 
-        # handle non-g002
-        if not self.is_aarc_g002:
-            return self._raw
-
         repr_str = (
             # NAMESPACE part
             'urn:{namespace_id}:{delegated_namespace}{subnamespaces}'
@@ -183,10 +169,6 @@ class Aarc_g002_entitlement:
 
     def __str__(self):
         """Return the entitlement in human-readable string form."""
-
-        # handle non-g002
-        if not self.is_aarc_g002:
-            return self._raw
 
         str_str = ' '.join(
             [
@@ -264,12 +246,6 @@ class Aarc_g002_entitlement:
         Please, use "is_contained_in", see below.
         """
 
-        # handle non-g002
-        if not self.is_aarc_g002:
-            if not other.is_aarc_g002:
-                return self._raw == other._raw
-            return False
-
         try:
             self_subgroup_for_role = self.subgroups[-1]
         except IndexError:
@@ -307,17 +283,3 @@ class Aarc_g002_entitlement:
     def is_contained_in(self, other):
         """ Check if self is contained in other """
         return (self <= other)
-
-    @property
-    def is_aarc_g002(self):
-        """
-        Check if this entitlements follows the AARC-G002 recommendation
-
-        Note this only works with raise_error_if_unparseable=False
-
-        :return: True if the recommendation is followed
-        :rtype: bool
-        """
-        return bool(self.group)
-
-# TODO: Add more Weird combinations of these with roles
