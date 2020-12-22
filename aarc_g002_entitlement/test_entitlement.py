@@ -137,20 +137,20 @@ class TestAarc_g002_entitlement:
         'actual_group',
         [
             "urn:mace:dir:entitlement:common-lib-terms",
-            "urn:geant:kit.edu:group:DFN-SLCS",
+            "urn:mace:egi.eu:aai.egi.eu:vm_operator@eosc-synergy.eu",
+            "urn:mace:egi.eu:aai.egi.eu:admins:member@covid19.eosc-synergy.eu",
         ]
     )
     def test_non_aarc_entitlement(self, actual_group):
-        required_group = "urn:geant:h-df.de:group:aai-admin"
-        req_entitlement = Aarc_g002_entitlement(required_group, strict=False)
-        act_entitlement = Aarc_g002_entitlement(actual_group, strict=False, raise_error_if_unparseable=False)
-        assert not req_entitlement.is_contained_in(act_entitlement)
+        with pytest.raises(Aarc_g002_entitlement_ParseError):
+            Aarc_g002_entitlement(actual_group, strict=False, raise_error_if_unparseable=False)
 
     @pytest.mark.parametrize(
         'required_group',
         [
             "urn:geant:h-df.de:group:aai-admin:role=admin",
             "urn:geant:h-df.de:group:aai-admin",
+            "urn:geant:kit.edu:group:DFN-SLCS",
         ]
     )
     def test_failure_incomplete_but_valid_entitlement(self, required_group):
