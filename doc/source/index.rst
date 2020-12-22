@@ -2,7 +2,7 @@ AARC-G002 Entitlements
 ======================
 
 This package provides a python Class to parse and compare entitlements according
-to the AARC-G002 Recommendation https://aarc-project.eu/guidelines/aarc-g002.
+to the AARC-G002 Recommendation https://aarc-community.org/guidelines/aarc-g002.
 
 
 Example
