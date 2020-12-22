@@ -189,9 +189,6 @@ class Aarc_g002_entitlement:
 
     def __mstr__(self):
         """Return the nicely formatted entitlement"""
-        # handle non-g002
-        if not self.is_aarc_g002:
-            return None
         str_str = '\n'.join(
             [
                 'namespace_id:        {namespace_id}' +
@@ -229,12 +226,6 @@ class Aarc_g002_entitlement:
         """
         Check if other object is equal.
         """
-
-        # handle non-g002
-        if not self.is_aarc_g002:
-            if not other.is_aarc_g002:
-                return self._raw == other._raw
-            return False
 
         is_equal = hash(self) == hash(other)
         return is_equal
