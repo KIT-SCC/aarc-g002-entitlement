@@ -1,7 +1,7 @@
 '''
 Check entitlements according to the AARC G002 recommendation
 
-https://aarc-project.eu/guidelines/aarc-g002
+https://aarc-community.org/guidelines/aarc-g002
 '''
 # This code is distributed under the MIT License
 # pylint
@@ -70,7 +70,7 @@ class Aarc_g002_entitlement:
     """
     Parse and compare EduPerson Entitlements
 
-    Reference specification: https://aarc-project.eu/guidelines/aarc-g002
+    Reference specification: https://aarc-community.org/guidelines/aarc-g002
 
     Class instances can be tested for equality and less-than-or-equality.
     The py:meth:is_contained_in can be used to checks if a user with an entitlement `U`
