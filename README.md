@@ -1,6 +1,12 @@
 [![Documentation Status](https://readthedocs.org/projects/aarc-g002-entitlement/badge/?version=latest&token=5f5165c8ebde7726ae9df9f62331a59e7344d6e61a4bb9ea8c97cecfae25f4f3)](https://aarc-g002-entitlement.readthedocs.io/en/latest/?badge=latest)
 # AARC G002 Entitlement Parser
 
+## Deprecation warning
+The newer [AarcEntitlement](https://github.com/KIT-SCC/AarcEntitlement)
+supports AARC-G002 and the updated version AARC-G069).
+
+
+
 # Introduction
 This package provides a python Class to parse and compare entitlements according
 to the AARC-G002 Recommendation https://aarc-community.org/guidelines/aarc-g002.
