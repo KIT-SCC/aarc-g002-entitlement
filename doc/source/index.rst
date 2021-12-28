@@ -1,3 +1,10 @@
+Deprecation Warning
+===================
+
+This package is being replaced by [AarcEntitlement](https://aarcentitlement.readthedocs.io),
+which supports AARC-G002 and its update AARC-G069.
+
+
 AARC-G002 Entitlements
 ======================
 
