@@ -3,7 +3,7 @@
 
 ## Deprecation warning
 The newer [AarcEntitlement](https://github.com/KIT-SCC/AarcEntitlement)
-supports AARC-G002 and the updated version AARC-G069).
+supports AARC-G002 and the updated version AARC-G069.
 
 
 
