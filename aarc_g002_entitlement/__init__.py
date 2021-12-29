@@ -8,6 +8,7 @@ https://aarc-community.org/guidelines/aarc-g002
 # vim: tw=100 foldmethod=indent
 # pylint: disable=invalid-name, superfluous-parens, logging-too-many-args
 
+
 import logging
 import regex
 # python2 / python3 compatible way to get access to urlencode and decode
