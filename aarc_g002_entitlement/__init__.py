@@ -79,11 +79,10 @@ class Aarc_g002_entitlement:
 
         `R`.is_contained_in(`U`)
 
-    :param str raw: The entitlement to parse. If the entitlement is '%xx' encoded it is decoded
-    before parsing.
+    :param str raw: The entitlement to parse. If the entitlement is '%xx' encoded it is decoded before parsing.
 
-    :param strict: `False` to ignore a missing group_authority and `True` otherwise, defaults
-    to `True`.
+    :param strict: `False` to ignore a missing group_authority and `True` otherwise, defaults to `True`.
+
     :type strict: bool, optional
 
     :raises Aarc_g002_entitlement_ParseError:
