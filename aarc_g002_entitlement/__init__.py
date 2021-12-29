@@ -3,11 +3,11 @@ Check entitlements according to the AARC G002 recommendation
 
 https://aarc-community.org/guidelines/aarc-g002
 '''
+
 # This code is distributed under the MIT License
 # pylint
 # vim: tw=100 foldmethod=indent
 # pylint: disable=invalid-name, superfluous-parens, logging-too-many-args
-
 
 import logging
 import regex
